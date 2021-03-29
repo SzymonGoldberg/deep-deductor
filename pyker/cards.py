@@ -55,7 +55,7 @@ class Card(namedtuple('Card', 'rank suit')):
         return str(rank_to_str[self.rank] + suit_to_str[self.suit]
             ) if self.rank in rank_to_str and self.suit in suit_to_str else str(
             'invalid card')
-
+            
 class Deck():
     """ Class represents all cards used in single game"""
     def __init__(self):
