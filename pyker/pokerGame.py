@@ -13,83 +13,75 @@ class Move(IntEnum):
 #           pre-flop    flop    trun    river
 stages = [  'pf',       'f',    't',    'r']
 
-class GameData:
+class SingleRoundData:
     """Structure with data which can be accessed in any time by any player
     """
-    def __init__(self):
-        self.communityCards = []
-        self.actions = dict()
-        self.stage = 0
-
-class Seat:
-    def __init__(self, player):
-        self.waitToBet = False
-        self.folded = False
-        self.underPot = 0
-        self.player = player
-
-    def isWaiting(self):
-        return self.waitToBet
-        
-class CashService:
     def __init__(self, limit):
-        self.blimit = limit
-        self.slimit = limit/2
-        self.pot = 0
+        self.communityCards = []
+        self.stage = 0
+        self.position = 0
+        self.localLimit = limit
+        self.pots = [0, 0, 0, 0]
+        self.actions = [] 
 
-    def legalMoves(self, stage, underPot, position):
-        if stage == 0 and (position == 0 or position == 1):
+    def legalMoves(self, underPot):
+        if self.stage == 0 and (self.position == 0 or self.position == 1):
             return [Move.BLIND]
 
         return [Move.FOLD , Move.CALL, Move.RAISE
         ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET]
 
-    def moveToCash(self, stage, seat, position, move):
-        if move == Move.FOLD:   return 0
-        if move == Move.CALL:   return 0
-        if move == Move.QUIT:   return 0
-        if move == Move.CHECK:  return seat.underPot
+    def raiseLimit(self):
+        self.limit *= 2
 
-        if move == Move.BLIND and position == 0:    return self.slimit/2
-        if move == Move.BLIND and position == 1:    return self.slimit
+    def moveToCash(self, underPot, move):
+        toCashDict = { 
+            move.FOLD   : 0,
+            move.CALL   : 0,
+            move.QUIT   : 0,
+            move.CHECK  : underPot,
+            move.BET    : self.localLimit,
+            move.RAISE  : self.localLimit + underPot,
+            move.BLIND  : self.localLimit / (1 if self.position else 2)
+        }
+        return toCashDict[move]
 
-        if move == Move.BET:
-            return self.slimit if stage in [0, 1] else self.blimit
+    def getAffordableMoves(self, seat):
+        cash = seat.player.cash
 
-        if move == Move.RAISE:
-            return seat.underPot + (self.slimit if gameData.stage in [0, 1] else self.blimit)
+        #player is broken case
+        if(cash < self.localLimit) return [Move.QUIT]
+        
+        legalMoves = self.legalMoves(seat.underPot)
+        return [x for x in legalMoves if cash >= self.moveToCash(seat.underPot, x)]
 
-    def checkAffordability(self, stage, seat, position):
-        legalMoves = self.legalMoves(stage, seat.underPot, position)
-        affordableMoves = [x for x in legalMoves if seat.player.cash >= self.moveToCash(stage, seat, position, x)]
+    def addAction(self, seat):
+        self.pots[self.stage] += seat.lastMoveValue
+        self.actions.append([seat.player.name, seat.lastMove, self.stage])
 
-        return affordableMoves if len(affordableMoves) > 0 else [Move.QUIT]
+class Seat:
+    def __init__(self, player):
+        self.isWaiting  = False
+        self.underPot   = 0
+        self.player     = player
+        self.Move       = None
+        self.MoveValue  = 0
 
-    def makeMove(self, seatWhichBet, seats, stage, position):
-        move = seatWhichBet.player.bet(self.checkAffordability(stage, seatWhichBet, position))
-        moveValue = self.betToCash(stage,seatWhichBet, position, move)
+    def bet(self, roundData):
+        self.Move = self.player.bet(roundData.getAffordableMoves(self))
+        self.moveValue = roundData.moveToCash(self.underPot, self.Move)
 
-        if move == Move.FOLD:
-            seatWhichBet.folded = True
-            return
-
-        if move == Move.BLIND or move == move.BET or move == Move.RAISE:
-            for x in seats:
-                if x != seatWhichBet:
-                    x.underPot += moveValue
-                    x.waitToBet = True
-            
-        seatWhichBet.player.cash -= moveValue
-        seatWhichBet.underPot = 0
-        seatWhichBet.waitToBet = False
-        self.pot += moveValue
-            
+        self.player.cash -= moveValue
+        self.underPot = 0
+        self.isWaiting = False
+        roundData.addAction(self)
+    
+#NOT DONE YET
 class Game:
     def __init__(self, players, limit):
         assert(len(players) > 2)
-        self.data = GameData()
+        self.roundData = SingleRoundData(limit)
         self.seats = [Seat(player) for player in players]
-        self.cashservice = CashService(limit)
 
     def turn(self):
 
