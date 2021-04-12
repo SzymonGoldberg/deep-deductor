@@ -10,10 +10,10 @@ class Move(IntEnum):
     RAISE   = 6
     QUIT    = 7
 
-#           pre-flop    flop    trun    river
+#           pre-flop    flop    turn    river
 stages = [  'pf',       'f',    't',    'r']
 
-class SingleRoundData:
+class RoundData:
     """Structure with data which can be accessed in any time by any player
     """
     def __init__(self, limit):
@@ -50,43 +50,51 @@ class SingleRoundData:
         cash = seat.player.cash
 
         #player is broken case
-        if(cash < self.localLimit) return [Move.QUIT]
+        if cash < self.localLimit: return [Move.QUIT]
         
         legalMoves = self.legalMoves(seat.underPot)
         return [x for x in legalMoves if cash >= self.moveToCash(seat.underPot, x)]
 
     def addAction(self, seat):
-        self.pots[self.stage] += seat.lastMoveValue
-        self.actions.append([seat.player.name, seat.lastMove, self.stage])
+        self.pots[self.stage] += seat.MoveValue
+        self.actions.append([seat.player.name, seat.Move, self.stage])
 
 class Seat:
     def __init__(self, player):
         self.isWaiting  = False
         self.underPot   = 0
         self.player     = player
-        self.Move       = None
-        self.MoveValue  = 0
+        self.move       = None
+        self.moveValue  = 0
 
     def bet(self, roundData):
-        self.Move = self.player.bet(roundData.getAffordableMoves(self))
-        self.moveValue = roundData.moveToCash(self.underPot, self.Move)
+        self.move = self.player.bet(roundData.getAffordableMoves(self))
+        self.moveValue = roundData.moveToCash(self.underPot, self.move)
 
         self.player.cash -= moveValue
         self.underPot = 0
         self.isWaiting = False
         roundData.addAction(self)
-    
+
+    def UpdateInfo(self, value):
+        self.underPot += value
+        self.isWaiting = (value > 0)
+
 #NOT DONE YET
 class Game:
     def __init__(self, players, limit):
         assert(len(players) > 2)
-        self.roundData = SingleRoundData(limit)
-        self.seats = [Seat(player) for player in players]
+        self.roundData = RoundData(limit)
+        self.players = players
+        self.deck = Deck()
 
-    def turn(self):
+    def throwPlayersWhoQuit(self):
+        self.players = [x for x in self.players if x.move != Move.QUIT]
 
-        position = 0
-        while sum([x.isWaiting for x in self.players]):
-            for seat in self.seats:
-                CashService.makeMove(seat, self.seats, self.data.stage, position)
-                position += 1
+    def stage(self):
+        seats = [Seat(player) for player in self.players]
+
+        while sum([seat.isWaiting for seat in seats]):
+            pass
+
+        self.roundData.stage += 1

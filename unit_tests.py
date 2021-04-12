@@ -1,6 +1,6 @@
 import unittest
-from pyker.cards import Suit, Rank, Card, Deck
-from pyker.pokerGame import CashService, Seat, Move
+from pyker.cards import *
+from pyker.pokerGame import *
 from pyker.agents.base import Agent
 
 class TestSuitEnum(unittest.TestCase):
@@ -31,28 +31,36 @@ class TestDeckClass(unittest.TestCase):
         self.assertEqual(deck.draw(3), [])
         self.assertEqual(deck.draw(10), [])
 
-class TestCashService(unittest.TestCase):
+class TestRoundData(unittest.TestCase):
     def testMoveValidation(self):
-        service = CashService(10)
-        move = service.legalMoves(0, 0, 0)
+        roundData = RoundData(15)
+        move = roundData.legalMoves(0)
         self.assertEqual(move, [Move.BLIND])
 
-        move = service.legalMoves(0, 0, 1)
+        roundData.position = 1
+        move = roundData.legalMoves(0)
         self.assertEqual(move, [Move.BLIND])
 
-        move = service.legalMoves(0, 0, 2)
+        roundData.stage = 1
+        move = roundData.legalMoves(0)
         self.assertEqual(move, [Move.FOLD, Move.CHECK, Move.BET])
 
-        move = service.legalMoves(0, 1, 2)
+        move = roundData.legalMoves(10)
         self.assertEqual(move, [Move.FOLD, Move.CALL, Move.RAISE])
 
+class TestGameClass(unittest.TestCase):
+    def testThrowingPlayers(self):
+        players = [Agent(1, "foo"), Agent(1, "bar"), Agent(1, "fun")]
 
-    def testCashValidation(self):
-        seat = Seat(Agent(100, 'testname'))
-        service = CashService(10)
+        for player in players:
+            player.move = Move.QUIT
 
-        move = service.checkAffordability(0, seat, 2)
-        self.assertEqual(move, [Move.FOLD, Move.CHECK, Move.BET])
+        game = Game(players, 0)
+        game.throwPlayers()
+        for player in game.players:
+            print(player.name)
+        self.assertTrue(len(game.players) == 0)
+
 
 
 if __name__ == '__main__':
