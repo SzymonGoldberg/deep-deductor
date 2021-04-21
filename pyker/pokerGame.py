@@ -68,15 +68,19 @@ class Seat:
         self.moveValue  = 0
 
     def bet(self, roundData):
-        self.move = self.player.bet(roundData.getAffordableMoves(self))
+        self.player.move = self.player.bet(roundData.getAffordableMoves(self))
         self.moveValue = roundData.moveToCash(self.underPot, self.move)
 
+        self.doneBet(moveValue)
+        roundData.addAction(self)
+        return moveValue
+
+    def doneBet(self):
         self.player.cash -= moveValue
         self.underPot = 0
         self.isWaiting = False
-        roundData.addAction(self)
 
-    def UpdateInfo(self, value):
+    def someoneBetted(self, value):
         self.underPot += value
         self.isWaiting = (value > 0)
 
@@ -87,6 +91,17 @@ class Game:
         self.roundData = RoundData(limit)
         self.players = players
         self.deck = Deck()
+
+    def makeBet(self, seats):
+        seatWhoBet = seats.pop(0)
+        lastBetValue = seatWhoBet.bet(RoundData)
+        for seat in seats: 
+            seat.someoneBetted(lastBetValue)
+
+        if seatWhoBet.player.move == move.QUIT:
+            self.players.pop(self.players.remove(seatWhoBet.player))
+        elif seatWhoBet.player.move != Move.FOLD:
+            seats.append(seatWhoBet)
 
     def throwPlayersWhoQuit(self):
         self.players = [x for x in self.players if x.move != Move.QUIT]
