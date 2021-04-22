@@ -109,16 +109,16 @@ class Game:
         for seat in seats: seat.player.hand = self.deck.draw(2) #every player now get cards
         self.bettingLoop(seats)
 
-        self.roundData.communityCards = self.deck.draw(3) #flop going onto the table
+        self.roundData.communityCards.extend(self.deck.draw(3)) #flop going onto the table
 
     def flopStage(self, seats):
         self.bettingLoop()
-        self.roundData.communityCards += self.deck.draw(1)
+        self.roundData.communityCards.extend(self.deck.draw(1))
         self.roundData.raiseLimit()
 
     def turnStage(self, seats):
         self.bettingLoop()
-        self.roundData.communityCards += self.deck.draw(1)
+        self.roundData.communityCards.extend(self.deck.draw(1))
 
     def riverStage(self, seats):
         self.bettingLoop()
