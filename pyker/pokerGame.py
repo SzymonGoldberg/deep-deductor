@@ -24,13 +24,6 @@ class RoundData:
         self.pots = [0, 0, 0, 0]
         self.actions = [] 
 
-    def legalMoves(self, underPot):
-        if self.stage == 0 and (self.position == 0 or self.position == 1):
-            return [Move.BLIND]
-
-        return [Move.FOLD , Move.CALL, Move.RAISE
-        ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET]
-
     def raiseLimit(self):
         self.limit *= 2
 
@@ -46,15 +39,21 @@ class RoundData:
         }
         return toCashDict[move]
 
-    def getAffordableMoves(self, seat):
-        cash = seat.player.cash
+    def expectedMoves(self, underPot):
+        if self.stage == 0 and (self.position == 0 or self.position == 1):
+            return [Move.BLIND]
 
-        #player is broken case
-        if cash < self.localLimit: return [Move.QUIT]
-        
-        legalMoves = self.legalMoves(seat.underPot)
-        return [x for x in legalMoves if cash >= self.moveToCash(seat.underPot, x)]
+        return [Move.FOLD , Move.CALL, Move.RAISE
+        ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET]
 
+    def AffordableMoves(self, seat):
+        moves = expectedMoves(seat.underPot)
+        return [x for x in moves if seat.player.cash >= self.moveToCash(seat.underPot, x)]
+
+    def legalMoves(self, seat):
+        affordableMoves = self.AffordableMoves(self.seat)
+        return [Move.QUIT] if AffordableMoves == [Move.FOLD] else AffordableMoves
+    
     def addAction(self, seat):
         self.pots[self.stage] += seat.MoveValue
         self.actions.append([seat.player.name, seat.Move, self.stage])
@@ -68,7 +67,7 @@ class Seat:
         self.moveValue  = 0
 
     def bet(self, roundData):
-        self.player.move = self.player.bet(roundData.getAffordableMoves(self))
+        self.move = self.player.bet(roundData.legalMoves(self))
         self.moveValue = roundData.moveToCash(self.underPot, self.move)
 
         self.doneBet(moveValue)
@@ -88,9 +87,10 @@ class Seat:
 class Game:
     def __init__(self, players, limit):
         assert(len(players) > 2)
-        self.roundData = RoundData(limit)
+        self.limit = limit
         self.players = players
-        self.deck = Deck()
+        self.deck = None
+        self.roundData = None
 
     def makeBet(self, seats):
         seatWhoBet = seats.pop(0)
@@ -98,18 +98,52 @@ class Game:
         for seat in seats: 
             seat.someoneBetted(lastBetValue)
 
-        if seatWhoBet.player.move == move.QUIT:
-            self.players.pop(self.players.remove(seatWhoBet.player))
-        elif seatWhoBet.player.move != Move.FOLD:
-            seats.append(seatWhoBet)
+        if seatWhoBet.move == move.QUIT:    self.players.remove(seatWhoBet.player)
+        elif seatWhoBet.move != Move.FOLD:  seats.append(seatWhoBet)
 
-    def throwPlayersWhoQuit(self):
-        self.players = [x for x in self.players if x.move != Move.QUIT]
+    def throwBrokenPlayers(self, entryValue):
+        self.players = [x for x in self.players if x.cash < entryValue]
 
-    def stage(self):
-        seats = [Seat(player) for player in self.players]
+    def preFlopStage(self, seats):
+        for i in range(2): self.makeBet() #small and big blinds
+        for seat in seats: seat.player.hand = self.deck.draw(2) #every player now get cards
+        self.bettingLoop(seats)
 
+        self.roundData.communityCards = self.deck.draw(3) #flop going onto the table
+
+    def flopStage(self, seats):
+        self.bettingLoop()
+        self.roundData.communityCards += self.deck.draw(1)
+        self.roundData.raiseLimit()
+
+    def turnStage(self, seats):
+        self.bettingLoop()
+        self.roundData.communityCards += self.deck.draw(1)
+
+    def riverStage(self, seats):
+        self.bettingLoop()
+        self.showdown()
+
+    def bettingLoop(self, seats):
         while sum([seat.isWaiting for seat in seats]):
-            pass
+            self.makeBet()
+            self.roundData.position += 1
 
+    def showdown(self):
+        pass
+
+    def stage(self, seats):
+        StagesFuncs = [
+            self.preFlopStage, 
+            self.flopStage, 
+            self.turnStage, 
+            self.riverStage
+        ]
+        StagesFuncs[self.roundData.stage](seats)
         self.roundData.stage += 1
+
+    def round(self):
+        self.deck = Deck()
+        self.roundData = RoundData(self.limit)
+        seats = [Seat(player) for player in self.players]
+        for i in range(len(stages)): self.stage(seats)
