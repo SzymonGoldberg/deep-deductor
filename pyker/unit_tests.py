@@ -1,7 +1,8 @@
 import unittest
-from pyker.cards import *
-from pyker.pokerGame import *
-from pyker.agents.base import Agent
+from cards import *
+from seat import *
+from game import *
+from agents.base import *
 
 class TestSuitEnum(unittest.TestCase):
     def testRankComparison(self):
@@ -19,19 +20,21 @@ class TestCardClass(unittest.TestCase):
         self.assertEqual('invalid card', card.asString())
 
 class TestDeckClass(unittest.TestCase):
+    def setUp(self):
+        self.deck = Deck()
+
     def testDeckInit(self):
-        deck = Deck()
-        self.assertEqual(len(deck.cards), 52)
+        self.assertEqual(len(self.deck.cards), 52)
 
     def testDraw(self):
-        deck = Deck()
-        self.assertEqual(len(deck.draw(3)), 3)
-        self.assertEqual(len(deck.cards), 52-3)
-        del deck.cards[:48]
-        self.assertEqual(deck.draw(3), [])
-        self.assertEqual(deck.draw(10), [])
+        self.assertEqual(len(self.deck.draw(3)), 3)
+        self.assertEqual(len(self.deck.cards), 52-3)
+        del self.deck.cards[:48]
+        self.assertEqual(self.deck.draw(3), [])
+        self.assertEqual(self.deck.draw(10), [])
 
 class TestRoundData(unittest.TestCase):
+    #TODO repair that test
     def testMoveValidation(self):
         roundData = RoundData(15)
         move = roundData.legalMoves(0)
@@ -49,16 +52,11 @@ class TestRoundData(unittest.TestCase):
         self.assertEqual(move, [Move.FOLD, Move.CALL, Move.RAISE])
 
 class TestGameClass(unittest.TestCase):
-    def testThrowingPlayers(self):
+    def testThrowingBrokenPlayers(self):
         players = [Agent(1, "foo"), Agent(1, "bar"), Agent(1, "fun")]
 
-        for player in players:
-            player.move = Move.QUIT
-
         game = Game(players, 0)
-        game.throwPlayers()
-        for player in game.players:
-            print(player.name)
+        game.throwBrokenPlayers(25)
         self.assertTrue(len(game.players) == 0)
 
 

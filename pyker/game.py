@@ -1,18 +1,21 @@
-from pyker.cards import Deck
+from cards import Deck
 from enum import IntEnum
 from seat import Seat
 
-class Move(IntEnum):
-    BLIND   = 0
-    FOLD    = 2
-    CHECK   = 3
-    BET     = 4
-    CALL    = 5
-    RAISE   = 6
-    QUIT    = 7
 
-#           pre-flop    flop    turn    river
-stages = [  'pf',       'f',    't',    'r']
+class Move(IntEnum):
+    BLIND = 0
+    FOLD = 2
+    CHECK = 3
+    BET = 4
+    CALL = 5
+    RAISE = 6
+    QUIT = 7
+
+
+#         pre-flop, flop, turn, river
+stages = ['pf', 'f', 't', 'r']
+
 
 class RoundData:
     """Structure with data which can be accessed in any time by any player
@@ -26,17 +29,17 @@ class RoundData:
         self.actions = [] 
 
     def raiseLimit(self):
-        self.limit *= 2
+        self.localLimit *= 2
 
     def moveToCash(self, underPot, move):
         toCashDict = { 
-            move.FOLD   : 0,
-            move.CALL   : 0,
-            move.QUIT   : 0,
-            move.CHECK  : underPot,
-            move.BET    : self.localLimit,
-            move.RAISE  : self.localLimit + underPot,
-            move.BLIND  : self.localLimit / (1 if self.position else 2)
+            move.FOLD:  0,
+            move.CALL:  0,
+            move.QUIT:  0,
+            move.CHECK: underPot,
+            move.BET:   self.localLimit,
+            move.RAISE: self.localLimit + underPot,
+            move.BLIND: self.localLimit / (1 if self.position else 2)
         }
         return toCashDict[move]
 
@@ -48,12 +51,12 @@ class RoundData:
         ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET]
 
     def AffordableMoves(self, seat):
-        moves = expectedMoves(seat.underPot)
+        moves = self.expectedMoves(seat.underPot)
         return [x for x in moves if seat.player.cash >= self.moveToCash(seat.underPot, x)]
 
     def legalMoves(self, seat):
-        affordableMoves = self.AffordableMoves(self.seat)
-        return [Move.QUIT] if AffordableMoves == [Move.FOLD] else AffordableMoves
+        affordableMoves = self.AffordableMoves(seat)
+        return [Move.QUIT] if affordableMoves == [Move.FOLD] else affordableMoves
     
     def addAction(self, seat):
         self.pots[self.stage] += seat.MoveValue
@@ -74,35 +77,35 @@ class Game:
         for seat in seats: 
             seat.someoneBetted(lastBetValue)
 
-        if seatWhoBet.move == move.QUIT:    self.players.remove(seatWhoBet.player)
+        if seatWhoBet.move == Move.QUIT:    self.players.remove(seatWhoBet.player)
         elif seatWhoBet.move != Move.FOLD:  seats.append(seatWhoBet)
 
     def throwBrokenPlayers(self, entryValue):
-        self.players = [x for x in self.players if x.cash < entryValue]
+        self.players = [x for x in self.players if x.cash >= entryValue]
 
     def preFlopStage(self, seats):
-        for i in range(2): self.makeBet() #small and big blinds
+        for i in range(2): self.makeBet(seats) #small and big blinds
         for seat in seats: seat.player.hand = self.deck.draw(2) #every player now get cards
         self.bettingLoop(seats)
 
         self.roundData.communityCards.extend(self.deck.draw(3)) #flop going onto the table
 
     def flopStage(self, seats):
-        self.bettingLoop()
+        self.bettingLoop(seats)
         self.roundData.communityCards.extend(self.deck.draw(1))
         self.roundData.raiseLimit()
 
     def turnStage(self, seats):
-        self.bettingLoop()
+        self.bettingLoop(seats)
         self.roundData.communityCards.extend(self.deck.draw(1))
 
     def riverStage(self, seats):
-        self.bettingLoop()
+        self.bettingLoop(seats)
         self.showdown()
 
     def bettingLoop(self, seats):
         while sum([seat.isWaiting for seat in seats]):
-            self.makeBet()
+            self.makeBet(seats)
             self.roundData.position += 1
 
     def showdown(self):
@@ -119,6 +122,7 @@ class Game:
         self.roundData.stage += 1
 
     def round(self):
+        self.throwBrokenPlayers(self.limit)
         self.deck = Deck()
         self.roundData = RoundData(self.limit)
         seats = [Seat(player) for player in self.players]

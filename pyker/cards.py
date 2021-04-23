@@ -48,10 +48,10 @@ rank_to_str = {
 }
 
 class Card(namedtuple('Card', 'rank suit')):
-    """ card type builded with rank (int between 2 and 14) and suit (see Suit class)"""
+    """ card type built with rank (int between 2 and 14) and suit (see Suit class)"""
     def asString(self):
         """ This method return card as string like this one from IRC  database.
-            If some errors occured it returns 'invalid card' string"""
+            If some errors occurred it returns 'invalid card' string"""
         return str(rank_to_str[self.rank] + suit_to_str[self.suit]
             ) if self.rank in rank_to_str and self.suit in suit_to_str else str(
             'invalid card')
