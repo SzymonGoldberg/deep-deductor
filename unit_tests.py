@@ -1,8 +1,8 @@
 import unittest
-from cards import *
-from seat import *
-from game import *
-from agents.base import *
+from pyker.cards import *
+from pyker.seat import *
+from pyker.game import *
+from pyker.agents.base import *
 
 class TestSuitEnum(unittest.TestCase):
     def testRankComparison(self):

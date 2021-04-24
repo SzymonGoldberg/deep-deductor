@@ -1,12 +1,6 @@
-from pyker.cards import Deck
-from pyker.seat import Seat
+from .cards import Deck
+from .seat import Seat
 from enum import IntEnum
-
-__all__ = [
-    'cards',
-    'game',
-    'seat'
-]
 
 class Move(IntEnum):
     BLIND = 0

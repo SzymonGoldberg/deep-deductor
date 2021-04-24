@@ -1,4 +1,4 @@
-from pyker import *
+from pyker.game import *
 from pyker.agents.humanDebug import *
 
 playerList = [
