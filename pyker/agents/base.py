@@ -8,5 +8,5 @@ class Agent:
         self.name = playerName
         self.hand = []
 
-    def bet(self, legalMoves, GameData):
+    def bet(self, legalMoves, roundData):
         raise NotImplementedError()

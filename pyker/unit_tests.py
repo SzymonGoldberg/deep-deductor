@@ -35,21 +35,77 @@ class TestDeckClass(unittest.TestCase):
 
 class TestRoundData(unittest.TestCase):
     #TODO repair that test
-    def testMoveValidation(self):
-        roundData = RoundData(15)
-        move = roundData.legalMoves(0)
-        self.assertEqual(move, [Move.BLIND])
+    def setUp(self):
+        self.roundData = RoundData(15)
 
-        roundData.position = 1
-        move = roundData.legalMoves(0)
-        self.assertEqual(move, [Move.BLIND])
+    def testExpectedMoves(self):
 
-        roundData.stage = 1
-        move = roundData.legalMoves(0)
-        self.assertEqual(move, [Move.FOLD, Move.CHECK, Move.BET])
+        #check for blind functionality
+        expectedMoves = self.roundData.expectedMoves(0)
+        self.assertEqual(expectedMoves, [Move.BLIND])
 
-        move = roundData.legalMoves(10)
-        self.assertEqual(move, [Move.FOLD, Move.CALL, Move.RAISE])
+        self.roundData.position = 1
+        expectedMoves = self.roundData.expectedMoves(0)
+        self.assertEqual(expectedMoves, [Move.BLIND])
+
+        #check for normal round functionality
+        self.roundData.position = 4
+        expectedMoves = self.roundData.expectedMoves(10)
+        self.assertTrue(Move.FOLD in expectedMoves)
+        self.assertTrue(Move.CALL in expectedMoves)
+        self.assertTrue(Move.RAISE in expectedMoves)
+        self.assertTrue(Move.QUIT in expectedMoves)
+        self.assertTrue(len(expectedMoves) == 4)
+
+        expectedMoves = self.roundData.expectedMoves(0)
+        self.assertTrue(Move.FOLD in expectedMoves)
+        self.assertTrue(Move.CHECK in expectedMoves)
+        self.assertTrue(Move.BET in expectedMoves)
+        self.assertTrue(Move.QUIT in expectedMoves)
+        self.assertTrue(len(expectedMoves) == 4)
+
+    def testAffordableMoves(self):
+
+        #blinds
+        player = Agent(15, "f00")
+        seat = Seat(player)
+        moves = self.roundData.affordableMoves(seat)
+        self.assertTrue(Move.BLIND in moves)
+        self.assertTrue(len(moves) == 1)
+
+        self.roundData.position = 1
+        moves = self.roundData.affordableMoves(seat)
+        self.assertTrue(Move.BLIND in moves)
+        self.assertTrue(len(moves) == 1)
+
+        #normal
+        self.roundData.position = 4
+        moves = self.roundData.affordableMoves(seat)
+        self.assertTrue(Move.QUIT in moves)
+        self.assertTrue(Move.BET in moves)
+        self.assertTrue(Move.CHECK in moves)
+        self.assertTrue(Move.FOLD in moves)
+        self.assertTrue(len(moves) == 4)
+
+        #under pot
+        seat.underPot = 10
+        seat.player.cash = 100
+        moves = self.roundData.affordableMoves(seat)
+        self.assertTrue(Move.QUIT in moves)
+        self.assertTrue(Move.RAISE in moves)
+        self.assertTrue(Move.CALL in moves)
+        self.assertTrue(Move.FOLD in moves)
+        self.assertTrue(len(moves) == 4)
+
+        #not enough money for bet
+        seat.underPot = 0
+        seat.player.cash = 10
+        moves = self.roundData.affordableMoves(seat)
+        self.assertTrue(Move.QUIT in moves)
+        self.assertTrue(Move.CHECK in moves)
+        self.assertTrue(Move.FOLD in moves)
+        self.assertTrue(len(moves) == 3)
+
 
 class TestGameClass(unittest.TestCase):
     def testThrowingBrokenPlayers(self):

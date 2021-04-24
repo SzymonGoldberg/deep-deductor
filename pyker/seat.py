@@ -7,7 +7,7 @@ class Seat:
         self.moveValue = 0
 
     def bet(self, roundData):
-        self.move = self.player.bet(roundData.legalMoves(self))
+        self.move = self.player.bet(roundData.legalMoves(self), roundData)
         self.moveValue = roundData.moveToCash(self.underPot, self.move)
 
         self.doneBet()

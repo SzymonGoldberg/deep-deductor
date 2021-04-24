@@ -1,7 +1,12 @@
-from cards import Deck
+from pyker.cards import Deck
+from pyker.seat import Seat
 from enum import IntEnum
-from seat import Seat
 
+__all__ = [
+    'cards',
+    'game',
+    'seat'
+]
 
 class Move(IntEnum):
     BLIND = 0
@@ -34,9 +39,9 @@ class RoundData:
     def moveToCash(self, underPot, move):
         toCashDict = { 
             move.FOLD:  0,
-            move.CALL:  0,
+            move.CHECK:  0,
             move.QUIT:  0,
-            move.CHECK: underPot,
+            move.CALL: underPot,
             move.BET:   self.localLimit,
             move.RAISE: self.localLimit + underPot,
             move.BLIND: self.localLimit / (1 if self.position else 2)
@@ -47,10 +52,10 @@ class RoundData:
         if self.stage == 0 and (self.position == 0 or self.position == 1):
             return [Move.BLIND]
 
-        return [Move.FOLD , Move.CALL, Move.RAISE
-        ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET]
+        return [Move.FOLD , Move.CALL, Move.RAISE, Move.QUIT
+        ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET, Move.QUIT]
 
-    def AffordableMoves(self, seat):
+    def affordableMoves(self, seat):
         moves = self.expectedMoves(seat.underPot)
         return [x for x in moves if seat.player.cash >= self.moveToCash(seat.underPot, x)]
 
@@ -121,7 +126,7 @@ class Game:
         StagesFuncs[self.roundData.stage](seats)
         self.roundData.stage += 1
 
-    def round(self):
+    def StartRound(self):
         self.throwBrokenPlayers(self.limit)
         self.deck = Deck()
         self.roundData = RoundData(self.limit)
