@@ -54,17 +54,17 @@ class RoundData:
         return [x for x in moves if seat.player.cash >= self.moveToCash(seat.underPot, x)]
 
     def legalMoves(self, seat):
-        affordableMoves = self.AffordableMoves(seat)
+        affordableMoves = self.affordableMoves(seat)
         return [Move.QUIT] if affordableMoves == [Move.FOLD] else affordableMoves
     
     def addAction(self, seat):
-        self.pots[self.stage] += seat.MoveValue
-        self.actions.append([seat.player.name, seat.Move, self.stage])
+        self.pots[self.stage] += seat.moveValue
+        self.actions.append([seat.player.name, seat.move, self.stage])
 
 #NOT DONE YET
 class Game:
     def __init__(self, players, limit):
-        assert(len(players) > 2)
+        assert(len(players) > 1)
         self.limit = limit
         self.players = players
         self.deck = None
@@ -72,7 +72,7 @@ class Game:
 
     def makeBet(self, seats):
         seatWhoBet = seats.pop(0)
-        lastBetValue = seatWhoBet.bet(RoundData)
+        lastBetValue = seatWhoBet.bet(self.roundData)
         for seat in seats: 
             seat.someoneBetted(lastBetValue)
 
