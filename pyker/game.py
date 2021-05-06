@@ -20,12 +20,12 @@ class RoundData:
     """Structure with data which can be accessed in any time by any player
     """
     def __init__(self, limit):
-        self.communityCards = []
-        self.stage = 0
-        self.position = 0
-        self.localLimit = limit
-        self.pots = [0, 0, 0, 0]
-        self.actions = [] 
+        self.communityCards = []        #cards visible for every player
+        self.stage = 0                  #current game stage (pref, flop, turn, river)
+        self.numOfBets = 0              #number of bets in whole round               
+        self.localLimit = limit         #limit for every betting tour
+        self.pots = [0, 0, 0, 0]        #every tour pot
+        self.actions = []               #not done yet - I will use this to save data to disk
 
     def raiseLimit(self):
         self.localLimit *= 2
@@ -38,20 +38,21 @@ class RoundData:
             move.CALL: underPot,
             move.BET:   self.localLimit,
             move.RAISE: self.localLimit + underPot,
-            move.BLIND: self.localLimit / (1 if self.position else 2)
+            move.BLIND: self.localLimit / (1 if self.numOfBets else 2)
         }
         return toCashDict[move]
 
     def expectedMoves(self, underPot):
-        if self.stage == 0 and (self.position == 0 or self.position == 1):
+        if self.stage == 0 and (self.numOfBets == 0 or self.numOfBets == 1):
             return [Move.BLIND]
 
         return [Move.FOLD , Move.CALL, Move.RAISE, Move.QUIT
         ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET, Move.QUIT]
 
     def affordableMoves(self, seat):
-        moves = self.expectedMoves(seat.underPot)
-        return [x for x in moves if seat.player.cash >= self.moveToCash(seat.underPot, x)]
+        underPot = self.pots[self.stage] - seat.localPot
+        moves = self.expectedMoves(underPot)
+        return [x for x in moves if seat.player.cash >= self.moveToCash(underPot, x)]
 
     def legalMoves(self, seat):
         affordableMoves = self.affordableMoves(seat)
@@ -60,6 +61,9 @@ class RoundData:
     def addAction(self, seat):
         self.pots[self.stage] += seat.moveValue
         self.actions.append([seat.player.name, seat.move, self.stage])
+
+    def updatePot(self, seats):
+        self.pots[self.stage] = max([seat.localPot for seat in seats])
 
 #NOT DONE YET
 class Game:
@@ -73,14 +77,22 @@ class Game:
     def makeBet(self, seats):
         seatWhoBet = seats.pop(0)
         lastBetValue = seatWhoBet.bet(self.roundData)
-        for seat in seats: 
-            seat.someoneBetted(lastBetValue)
+        self.roundData.updatePot(seats)
 
         if seatWhoBet.move == Move.QUIT:    self.players.remove(seatWhoBet.player)
         elif seatWhoBet.move != Move.FOLD:  seats.append(seatWhoBet)
+        
+        self.roundData.numOfBets += 1
 
     def throwBrokenPlayers(self, entryValue):
         self.players = [x for x in self.players if x.cash >= entryValue]
+
+    def bettingLoop(self, seats):
+        
+        self.makeBet(seats)
+
+        if sum([x.isWaiting for x in seats]):
+            self.bettingLoop(seats)
 
     def preFlopStage(self, seats):
         for i in range(2): self.makeBet(seats) #small and big blinds
@@ -102,11 +114,6 @@ class Game:
         self.bettingLoop(seats)
         self.showdown()
 
-    def bettingLoop(self, seats):
-        while sum([seat.isWaiting for seat in seats]):
-            self.makeBet(seats)
-            self.roundData.position += 1
-
     def showdown(self):
         pass
 
@@ -117,6 +124,7 @@ class Game:
             self.turnStage, 
             self.riverStage
         ]
+        print("stage = ", self.roundData.stage)     #debug
         StagesFuncs[self.roundData.stage](seats)
         self.roundData.stage += 1
 

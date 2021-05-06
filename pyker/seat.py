@@ -1,7 +1,7 @@
 class Seat:
     def __init__(self, player):
         self.isWaiting = False
-        self.underPot = 0
+        self.localPot = 0
         self.player = player
         self.move = None
         self.moveValue = 0
@@ -16,9 +16,7 @@ class Seat:
 
     def doneBet(self):
         self.player.cash -= self.moveValue
-        self.underPot = 0
-        self.isWaiting = False
+        self.localPot += self.moveValue
 
     def someoneBetted(self, value):
-        self.underPot += value
-        self.isWaiting = (value > 0)
+        print("waiting? ", self.isWaiting, " player ", self.player.name, "underpot? ", self.underPot) #debug
