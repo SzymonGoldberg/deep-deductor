@@ -1,5 +1,5 @@
 from .cards import Deck
-from .seat import Seat
+from .seat import Seat, Table
 from .roundData import RoundData, Move
 
 #NOT DONE YET
@@ -11,54 +11,50 @@ class Game:
         self.deck = None
         self.roundData = None
 
-
-    ##TODO I have to change a lot of things in this function
-    def makeBet(self, seats):
-        seatWhoBet = seats.pop(0)
+    def makeBet(self, table):
+        seatWhoBet = table.seats.pop(0)
         lastBetValue = seatWhoBet.bet(self.roundData)
 
         if seatWhoBet.move == Move.QUIT:    self.players.remove(seatWhoBet.player)
-        elif seatWhoBet.move != Move.FOLD:  seats.append(seatWhoBet)
-        self.roundData.updatePot(seats)
-        for seat in seats: 
-            seat.updateWaiting(self.roundData.getCurrentPot())
+        elif seatWhoBet.move != Move.FOLD:  table.seats.append(seatWhoBet)
+
+        self.roundData.setCurrentPot(table.maxLocalPool())
+        table.updateWaiting(self.roundData.getCurrentPot())
 
         self.roundData.numOfBets += 1
-        print("current pot  = ", self.roundData.getCurrentPot(), " player pot = ", seats[-1].localPot)
+        print("current pot  = ", self.roundData.getCurrentPot(), " player pot = ", table.seats[-1].localPot)  #debug
 
     def throwBrokenPlayers(self):
         self.players = [x for x in self.players if x.cash >= self.limit]
 
-    def bettingLoop(self, seats):
-        self.makeBet(seats)
+    def bettingLoop(self, table):
+        self.makeBet(table)
+        if table.isSomeoneWaiting(): self.bettingLoop(table)
 
-        if max([x.isWaiting for x in seats]):
-            self.bettingLoop(seats)
-
-    def preFlopStage(self, seats):
-        for i in range(2): self.makeBet(seats) #small and big blinds
-        for seat in seats: seat.player.hand = self.deck.draw(2) #every player now get cards
-        self.bettingLoop(seats)
+    def preFlopStage(self, table):
+        for i in range(2): self.makeBet(table) #small and big blinds
+        for seat in table.seats: seat.player.hand = self.deck.draw(2) #every player now get cards
+        self.bettingLoop(table)
 
         self.roundData.communityCards.extend(self.deck.draw(3)) #flop going onto the table
 
-    def flopStage(self, seats):
-        self.bettingLoop(seats)
+    def flopStage(self, table):
+        self.bettingLoop(table)
         self.roundData.communityCards.extend(self.deck.draw(1))
         self.roundData.raiseLimit()
 
-    def turnStage(self, seats):
-        self.bettingLoop(seats)
+    def turnStage(self, table):
+        self.bettingLoop(table)
         self.roundData.communityCards.extend(self.deck.draw(1))
 
-    def riverStage(self, seats):
-        self.bettingLoop(seats)
+    def riverStage(self, table):
+        self.bettingLoop(table)
         self.showdown()
 
     def showdown(self):
         pass
 
-    def stage(self, seats):
+    def stage(self, table):
         StagesFuncs = [
             self.preFlopStage, 
             self.flopStage, 
@@ -66,9 +62,8 @@ class Game:
             self.riverStage
         ]
         print("stage = ", self.roundData.stage)     #debug
-        StagesFuncs[self.roundData.stage](seats)
-        for seat in seats:
-            seat.stageReset()
+        StagesFuncs[self.roundData.stage](table)
+        table.stageReset()
 
         self.roundData.stage += 1
 
@@ -76,5 +71,5 @@ class Game:
         self.throwBrokenPlayers()
         self.deck = Deck()
         self.roundData = RoundData(self.limit)
-        seats = [Seat(player) for player in self.players]
-        for i in range(4): self.stage(seats)
+        table = Table(self.players)
+        for i in range(4): self.stage(table)

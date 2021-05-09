@@ -18,7 +18,7 @@ class RoundData:
     """
     def __init__(self, limit):
         self.communityCards = []        #cards visible for every player
-        self.stage = 0                  #current game stage (pref, flop, turn, river)
+        self.stage = 0                  #current game stage (pref=0, flop=0, turn=0, river=0)
         self.numOfBets = 0              #number of bets in whole round               
         self.localLimit = limit         #limit for every betting tour
         self.pots = [0, 0, 0, 0]        #every tour pot
@@ -29,6 +29,9 @@ class RoundData:
 
     def getCurrentPot(self):
         return self.pots[self.stage]
+
+    def setCurrentPot(self, value):
+        self.pots[self.stage] = value
 
     def moveToCash(self, localPot, move):
         underPot = self.getCurrentPot() - localPot
@@ -60,6 +63,3 @@ class RoundData:
     
     def addAction(self, seat):
         self.actions.append([seat.player.name, seat.move, self.stage])
-
-    def updatePot(self, seats):
-        self.pots[self.stage] = max([seat.localPot for seat in seats])

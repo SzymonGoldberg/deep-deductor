@@ -23,6 +23,7 @@ class Seat:
         self.localPot = 0
         self.isWaiting = True
 
+#TODO this class is taking care about all seats
 class Table:
     def __init__(self, players):
         self.seats = [Seat(player) for player in players]
@@ -32,3 +33,9 @@ class Table:
 
     def stageReset(self):
         for seat in self.seats: seat.stageReset()
+
+    def isSomeoneWaiting(self):
+        return bool(max([x.isWaiting for x in self.seats]))
+
+    def maxLocalPool(self):
+        return max(x.localPot for x in self.seats)
