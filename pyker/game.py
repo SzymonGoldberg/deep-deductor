@@ -25,7 +25,7 @@ class Game:
         print("current pot  = ", self.roundData.getCurrentPot(), " player pot = ", table.seats[-1].localPot)  #debug
 
     def throwBrokenPlayers(self):
-        self.players = [x for x in self.players if x.cash >= self.limit]
+        self.players = [x for x in self.players if x.cash > self.limit]
 
     def bettingLoop(self, table):
         self.makeBet(table)

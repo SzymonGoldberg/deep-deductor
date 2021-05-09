@@ -44,12 +44,12 @@ class TestRoundData(unittest.TestCase):
         expectedMoves = self.roundData.expectedMoves(0)
         self.assertEqual(expectedMoves, [Move.BLIND])
 
-        self.roundData.position = 1
+        self.roundData.numOfBets = 1
         expectedMoves = self.roundData.expectedMoves(0)
         self.assertEqual(expectedMoves, [Move.BLIND])
 
         #check for normal round functionality
-        self.roundData.position = 4
+        self.roundData.numOfBets = 4
         expectedMoves = self.roundData.expectedMoves(10)
         self.assertTrue(Move.FOLD in expectedMoves)
         self.assertTrue(Move.CALL in expectedMoves)
@@ -73,13 +73,13 @@ class TestRoundData(unittest.TestCase):
         self.assertTrue(Move.BLIND in moves)
         self.assertTrue(len(moves) == 1)
 
-        self.roundData.position = 1
+        self.roundData.numOfBets = 1
         moves = self.roundData.affordableMoves(seat)
         self.assertTrue(Move.BLIND in moves)
         self.assertTrue(len(moves) == 1)
 
         #normal
-        self.roundData.position = 4
+        self.roundData.numOfBets = 4
         moves = self.roundData.affordableMoves(seat)
         self.assertTrue(Move.QUIT in moves)
         self.assertTrue(Move.BET in moves)
@@ -88,7 +88,7 @@ class TestRoundData(unittest.TestCase):
         self.assertTrue(len(moves) == 4)
 
         #under pot
-        seat.underPot = 10
+        self.roundData.setCurrentPot(10)
         seat.player.cash = 100
         moves = self.roundData.affordableMoves(seat)
         self.assertTrue(Move.QUIT in moves)
@@ -98,11 +98,11 @@ class TestRoundData(unittest.TestCase):
         self.assertTrue(len(moves) == 4)
 
         #not enough money for bet
-        seat.underPot = 0
-        seat.player.cash = 10
+        self.roundData.setCurrentPot(15)
+        seat.player.cash = 15
         moves = self.roundData.affordableMoves(seat)
         self.assertTrue(Move.QUIT in moves)
-        self.assertTrue(Move.CHECK in moves)
+        self.assertTrue(Move.CALL in moves)
         self.assertTrue(Move.FOLD in moves)
         self.assertTrue(len(moves) == 3)
 
@@ -111,8 +111,8 @@ class TestGameClass(unittest.TestCase):
     def testThrowingBrokenPlayers(self):
         players = [Agent(1, "foo"), Agent(1, "bar"), Agent(1, "fun")]
 
-        game = Game(players, 0)
-        game.throwBrokenPlayers(25)
+        game = Game(players, 12)
+        game.throwBrokenPlayers()
         self.assertTrue(len(game.players) == 0)
 
 
