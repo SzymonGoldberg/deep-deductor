@@ -3,6 +3,7 @@ from pyker.cards import *
 from pyker.seat import *
 from pyker.game import *
 from pyker.agents.base import *
+from pyker.cardValidator import *
 
 class TestSuitEnum(unittest.TestCase):
     def testRankComparison(self):
@@ -105,6 +106,33 @@ class TestRoundData(unittest.TestCase):
         self.assertTrue(Move.CALL in moves)
         self.assertTrue(Move.FOLD in moves)
         self.assertTrue(len(moves) == 3)
+
+class TestCardValidatorClass(unittest.TestCase):
+    def setUp(self):
+        self.cardValidator = CardValidator()
+
+    def testStraightFlushCheck(self):
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.DIAMOND)]
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards))
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.HEART),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.DIAMOND)]
+        self.assertFalse(self.cardValidator.checkForStraightFlush(cards))
+
+
 
 
 class TestGameClass(unittest.TestCase):
