@@ -8,16 +8,20 @@ class CardValidator:
     def checkForStraightFlush(self, cards):
         
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
-        
+        straightFlushes = []
         for cardIter in sortedCards:
-            inRow = [0]
+            inRow = 0
+            flush = []
             for card in sortedCards:
                 if card.suit == cardIter.suit and card.rank == (inRow + cardIter.rank):
                     inRow += 1
-            if inRow == 5: 
-                return True
+                    flush.append(card)
+            if inRow == 5:
+                straightFlushes.append(flush[0])
 
-        return False
+        isStraightFlush = len(straightFlushes) > 0
+        return [isStraightFlush, max(straightFlushes) if isStraightFlush else None]
 
-    def checkForRoyalFlush(self):
-        pass
+    def checkForRoyalFlush(self,cards):
+        isStraightFlush = self.checkForStraightFlush(cards)
+        return [True if isStraightFlush[1].rank == Rank.TEN else False, isStraightFlush]

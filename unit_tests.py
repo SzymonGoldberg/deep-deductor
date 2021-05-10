@@ -120,7 +120,9 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,     Suit.SPADE),
         Card(Rank.EIGHT,    Suit.DIAMOND),
         Card(Rank.SEVEN,    Suit.DIAMOND)]
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards))
+
+        
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [True, Card(Rank.FOUR, Suit.DIAMOND)])
 
         cards = [
         Card(Rank.FOUR,     Suit.DIAMOND),
@@ -130,7 +132,43 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,     Suit.SPADE),
         Card(Rank.EIGHT,    Suit.DIAMOND),
         Card(Rank.SEVEN,    Suit.DIAMOND)]
-        self.assertFalse(self.cardValidator.checkForStraightFlush(cards))
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [False, None])
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.NINE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.EIGHT,    Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.DIAMOND)]
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [True, Card(Rank.FIVE, Suit.DIAMOND)])
+
+    def testRoyalFlushCheck(self):
+        cards = [
+        Card(Rank.QUEEN,    Suit.DIAMOND),
+        Card(Rank.JACK,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.TEN,      Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [True, Card(Rank.TEN, Suit.DIAMOND)])
+
+        cards = [
+        Card(Rank.QUEEN,  Suit.DIAMOND),
+        Card(Rank.JACK,   Suit.HEART),
+        Card(Rank.KING,   Suit.DIAMOND),
+        Card(Rank.FIVE,   Suit.DIAMOND),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.TEN,    Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+
+        
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [False, None])
+
+
 
 
 
