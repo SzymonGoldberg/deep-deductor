@@ -1,6 +1,5 @@
 from .cards import *
 from operator import attrgetter
-from collections import Counter
 
 class CardValidator:
     def combination(self, cards):
@@ -13,7 +12,6 @@ class CardValidator:
             self.checkForThreeOfKind,
             self.checkForPairs,
             self.checkHighCard]
-
         return max([x(cards) for x in funcList])
 
     def groupCardsIf(self, cards, ifStatement, appendStatement):
@@ -40,7 +38,6 @@ class CardValidator:
         if len(straightFlushes) > 0:
             maxstr = max(straightFlushes)
             return 10_000 + maxstr.rank * 10 + maxstr.suit
-
         return False
 
     def checkForFourOfKind(self, cards):
@@ -61,7 +58,6 @@ class CardValidator:
             cards,
             lambda x, y, z: (x.rank == y.rank),
             lambda x: x >= 3)
-
         return list(set(threes))
 
     def findAllPairs(self, cards):
@@ -69,7 +65,6 @@ class CardValidator:
             cards, 
             lambda x, y, z: (x.rank == y.rank),
             lambda x: x >= 2)
-
         return list(set(pairs))        
 
     def CheckForFullHouse(self, cards):
@@ -96,7 +91,6 @@ class CardValidator:
         if len(straightFlushes) > 0:
             maxstr = max(straightFlushes)
             return 7_000 + maxstr.rank * 10 + maxstr.suit
-
         return False
 
     def checkForStraight(self, cards):
@@ -109,14 +103,12 @@ class CardValidator:
         if len(straightHands) > 0:
             maxstr = max(straightHands)
             return 6_000 + maxstr.rank * 10 + maxstr.suit
-
         return False
 
     def checkForThreeOfKind(self,cards):
         threes = self.findAllThree(cards)
         if len(threes) > 0:
             return 5_000 + max(threes).rank * 10
-
         return False
 
     def checkForPairs(self,cards):
