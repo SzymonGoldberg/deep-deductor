@@ -3,8 +3,18 @@ from operator import attrgetter
 from collections import Counter
 
 class CardValidator:
-    def combination(self):
-        pass
+    def combination(self, cards):
+        funcList = [
+            self.checkForStraightFlush,
+            self.checkForFourOfKind,
+            self.CheckForFullHouse,
+            self.checkForFlush,
+            self.checkForStraight,
+            self.checkForThreeOfKind,
+            self.checkForPairs,
+            self.checkHighCard]
+
+        return max([x(cards) for x in funcList])
 
     def groupCardsIf(self, cards, ifStatement, appendStatement):
         groups = []
@@ -106,6 +116,8 @@ class CardValidator:
         threes = self.findAllThree(cards)
         if len(threes) > 0:
             return 5_000 + max(threes).rank * 10
+
+        return False
 
     def checkForPairs(self,cards):
         pairs = self.findAllPairs(cards)

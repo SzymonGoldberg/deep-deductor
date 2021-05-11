@@ -398,6 +398,106 @@ class TestCardValidatorClass(unittest.TestCase):
 
         self.assertTrue(self.cardValidator.checkHighCard(cards) == 2_000 + Rank.TEN * 10 + Suit.CLUB)
 
+    def testCombination(self):
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.combination(cards) ==  10_000 + Rank.EIGHT * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.ACE,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.combination(cards) == 4_000 + Rank.JACK * 10 + Rank.NINE)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.ACE,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.combination(cards) == 4_000 + Rank.ACE * 10 + Rank.FIVE)
+
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.FIVE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.ACE,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.combination(cards) == 3_000 + Rank.JACK * 10 + Suit.HEART)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.NINE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.TEN,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.combination(cards) == 3_000 + Rank.FOUR * 10 + Suit.HEART)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.THREE,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.NINE,   Suit.CLUB),
+        Card(Rank.KING,   Suit.SPADE),
+        Card(Rank.TEN,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertFalse(self.cardValidator.combination(cards) == 2_000 + Rank.ACE + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.ACE,   Suit.SPADE),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.combination(cards) == 4_000 + Rank.ACE * 10 + Rank.FIVE)
+
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.FIVE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.KING,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.combination(cards) == 3_000 + Rank.JACK * 10 + Suit.HEART)
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.FOUR,     Suit.HEART),
+        Card(Rank.TWO,      Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.CLUB),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.TEN,      Suit.CLUB),
+        Card(Rank.FOUR,    Suit.SPADE)]
+
+        self.assertTrue(self.cardValidator.combination(cards) == 5_000 + Rank.FOUR * 10)
+
 class TestGameClass(unittest.TestCase):
     def testThrowingBrokenPlayers(self):
         players = [Agent(1, "foo"), Agent(1, "bar"), Agent(1, "fun")]
