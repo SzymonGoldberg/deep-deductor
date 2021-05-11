@@ -498,6 +498,30 @@ class TestCardValidatorClass(unittest.TestCase):
 
         self.assertTrue(self.cardValidator.combination(cards) == 5_000 + Rank.FOUR * 10)
 
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.JACK, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.FIVE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.ACE,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.combination(cards) == 5_000 + Rank.JACK * 10)
+
+        cards1 = [
+        Card(Rank.JACK,   Suit.DIAMOND),
+        Card(Rank.JACK,   Suit.HEART),
+        Card(Rank.JACK,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.combination(cards1) == 8_000 + Rank.JACK * 10 + Rank.FIVE)
+
+        self.assertTrue(self.cardValidator.combination(cards) < self.cardValidator.combination(cards1))
+
 class TestGameClass(unittest.TestCase):
     def testThrowingBrokenPlayers(self):
         players = [Agent(1, "foo"), Agent(1, "bar"), Agent(1, "fun")]
