@@ -91,16 +91,10 @@ class CardValidator:
 
     def checkForStraight(self, cards):
         sortedCards = sorted(cards, key=attrgetter('rank', 'suit'))
-        straightHands = []
-        for cardIter in sortedCards:
-            inRow = 0
-            straight = []
-            for card in sortedCards:
-                if card.rank == (inRow + cardIter.rank):
-                    inRow += 1
-                    straight.append(card)
-            if inRow == 5:
-                straightHands.append(straight[-1])
+        straightHands = self.groupCardsIf(
+            sortedCards,
+            lambda x, y, z: (y.rank == x.rank + z),
+            lambda x: x == 5)
 
         if len(straightHands) > 0:
             maxstr = max(straightHands)
