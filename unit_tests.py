@@ -122,7 +122,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.SEVEN,    Suit.DIAMOND)]
 
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) ==  10_000 + Rank.FOUR * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) ==  10_000 + Rank.EIGHT * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.FOUR,     Suit.DIAMOND),
@@ -142,7 +142,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,     Suit.DIAMOND),
         Card(Rank.EIGHT,    Suit.DIAMOND),
         Card(Rank.SEVEN,    Suit.DIAMOND)]
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10_000 + Rank.FIVE * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10_000 + Rank.NINE * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.QUEEN,    Suit.DIAMOND),
@@ -153,7 +153,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,      Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10_000 + Rank.TEN * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10_000 + Rank.ACE * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.QUEEN,  Suit.DIAMOND),
@@ -177,7 +177,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,    Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
         
-        self.assertTrue(self.cardValidator.checkForFourOfKind(cards) == 9_000 + 10 * Rank.JACK + Suit.CLUB)
+        self.assertTrue(self.cardValidator.checkForFourOfKind(cards) == 9_000 + 10 * Rank.JACK + Suit.SPADE)
         
         cards = [
         Card(Rank.FOUR,  Suit.DIAMOND),
@@ -191,7 +191,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,    Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
         
-        self.assertTrue(self.cardValidator.checkForFourOfKind(cards) == 9_000 + 10 * Rank.FIVE + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForFourOfKind(cards) == 9_000 + 10 * Rank.FIVE + Suit.SPADE)
 
     def testFullHouse(self):
         cards = [
@@ -338,7 +338,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,  Suit.DIAMOND),
         Card(Rank.ACE,  Suit.DIAMOND)]
 
-        self.assertTrue(self.cardValidator.checkForPairs(cards) == 3_000 + Rank.JACK * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForPairs(cards) == 3_000 + Rank.JACK * 10 + Suit.HEART)
 
         cards = [
         Card(Rank.FOUR,   Suit.DIAMOND),
@@ -349,7 +349,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,   Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
         
-        self.assertTrue(self.cardValidator.checkForPairs(cards) == 3_000 + Rank.FOUR * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForPairs(cards) == 3_000 + Rank.FOUR * 10 + Suit.HEART)
 
         cards = [
         Card(Rank.FOUR,   Suit.DIAMOND),

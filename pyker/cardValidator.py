@@ -6,19 +6,27 @@ class CardValidator:
     def combination(self):
         pass
 
+    def groupCardsIf(self, cards, ifStatement, appendStatement):
+        groups = []
+        for cardIter in cards:
+            counter = 0
+            group = []
+            for card in cards:
+                if ifStatement(cardIter, card, counter):
+                    counter += 1
+                    group.append(card)
+            if appendStatement(counter):
+                groups.append(group[-1])
+
+        return groups
+
     def checkForStraightFlush(self, cards):
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
-        straightFlushes = []
-        for cardIter in sortedCards:
-            inRow = 0
-            flush = []
-            for card in sortedCards:
-                if card.suit == cardIter.suit and card.rank == (inRow + cardIter.rank):
-                    inRow += 1
-                    flush.append(card)
-            if inRow == 5:
-                straightFlushes.append(flush[0])
-
+        straightFlushes = self.groupCardsIf(
+            sortedCards, 
+            lambda x, y, z: (x.suit == y.suit and y.rank == (x.rank + z)),
+            lambda x: x == 5)
+        
         if len(straightFlushes) > 0:
             maxstr = max(straightFlushes)
             return 10_000 + maxstr.rank * 10 + maxstr.suit
@@ -27,16 +35,10 @@ class CardValidator:
 
     def checkForFourOfKind(self, cards):
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
-        fours = []
-        for cardIter in sortedCards:
-            sameRankCounter = 0
-            four = []
-            for card in sortedCards:
-                if card.rank == cardIter.rank:
-                    sameRankCounter += 1
-                    four.append(card)
-            if sameRankCounter == 4:
-                fours.append(four[0])
+        fours = self.groupCardsIf(
+            sortedCards,
+            lambda x, y, z: (x.rank == y.rank),
+            lambda x: x == 4)
 
         if len(fours) > 0:
             maxFour = max(fours)
@@ -45,30 +47,18 @@ class CardValidator:
         return False
     
     def findAllThree(self, cards):
-        threes = []
-        for cardIter in cards:
-            three = []
-            sameRankCounter = 0 
-            for card in cards:
-                if card.rank == cardIter.rank:
-                    sameRankCounter += 1
-                    three.append(card)
-            if sameRankCounter >= 3:
-                threes.append(three[0])
+        threes = self.groupCardsIf(
+            cards,
+            lambda x, y, z: (x.rank == y.rank),
+            lambda x: x >= 3)
 
         return list(set(threes))
 
     def findAllPairs(self, cards):
-        pairs = []
-        for cardIter in cards:
-            pair = []
-            sameRankCounter = 0
-            for card in cards:
-                if card.rank == cardIter.rank:
-                    sameRankCounter += 1
-                    pair.append(card)
-            if sameRankCounter >= 2:
-                pairs.append(pair[0])
+        pairs = self.groupCardsIf(
+            cards, 
+            lambda x, y, z: (x.rank == y.rank),
+            lambda x: x >= 2)
 
         return list(set(pairs))        
 
@@ -88,17 +78,11 @@ class CardValidator:
     
     def checkForFlush(self, cards):
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
-        straightFlushes = []
-        for cardIter in sortedCards:
-            inRow = 0
-            flush = []
-            for card in sortedCards:
-                if card.suit == cardIter.suit:
-                    inRow += 1
-                    flush.append(card)
-            if inRow == 5:
-                straightFlushes.append(flush[-1])
-
+        straightFlushes = self.groupCardsIf(
+            sortedCards,
+            lambda x, y, z: (x.suit == y.suit),
+            lambda x: x == 5)
+        
         if len(straightFlushes) > 0:
             maxstr = max(straightFlushes)
             return 7_000 + maxstr.rank * 10 + maxstr.suit
