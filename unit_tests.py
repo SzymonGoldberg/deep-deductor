@@ -122,7 +122,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.SEVEN,    Suit.DIAMOND)]
 
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [True, Card(Rank.FOUR, Suit.DIAMOND)])
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) ==  10000 + Rank.FOUR * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.FOUR,     Suit.DIAMOND),
@@ -132,7 +132,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,     Suit.SPADE),
         Card(Rank.EIGHT,    Suit.DIAMOND),
         Card(Rank.SEVEN,    Suit.DIAMOND)]
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [False, None])
+        self.assertFalse(self.cardValidator.checkForStraightFlush(cards))
 
         cards = [
         Card(Rank.FOUR,     Suit.DIAMOND),
@@ -142,9 +142,8 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,     Suit.DIAMOND),
         Card(Rank.EIGHT,    Suit.DIAMOND),
         Card(Rank.SEVEN,    Suit.DIAMOND)]
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [True, Card(Rank.FIVE, Suit.DIAMOND)])
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10000 + Rank.FIVE * 10 + Suit.DIAMOND)
 
-    def testRoyalFlushCheck(self):
         cards = [
         Card(Rank.QUEEN,    Suit.DIAMOND),
         Card(Rank.JACK,      Suit.DIAMOND),
@@ -154,7 +153,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,      Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [True, Card(Rank.TEN, Suit.DIAMOND)])
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10000 + Rank.TEN * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.QUEEN,  Suit.DIAMOND),
@@ -164,13 +163,58 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,   Suit.SPADE),
         Card(Rank.TEN,    Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
-
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == [False, None])
+        self.assertFalse(self.cardValidator.checkForStraightFlush(cards))
 
+    def testFourOfKind(self):
 
+        cards = [
+        Card(Rank.JACK,  Suit.DIAMOND),
+        Card(Rank.JACK,   Suit.HEART),
+        Card(Rank.JACK,   Suit.SPADE),
+        Card(Rank.JACK,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.TEN,    Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkForFourOfKind(cards) == 9_000 + 10 * Rank.JACK + Suit.CLUB)
+        
+        cards = [
+        Card(Rank.FOUR,  Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.FOUR,   Suit.SPADE),
+        Card(Rank.FOUR,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.HEART),
+        Card(Rank.FIVE,   Suit.DIAMOND),
+        Card(Rank.FIVE,   Suit.DIAMOND),
+        Card(Rank.TEN,    Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkForFourOfKind(cards) == 9_000 + 10 * Rank.FIVE + Suit.DIAMOND)
 
+    def testFullHouse(self):
+        cards = [
+        Card(Rank.JACK,  Suit.DIAMOND),
+        Card(Rank.JACK,   Suit.HEART),
+        Card(Rank.JACK,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.TEN,    Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.CheckForFullHouse(cards) == 8_000 + Rank.JACK * 10 + Rank.FIVE)
 
+        cards = [
+        Card(Rank.JACK,  Suit.DIAMOND),
+        Card(Rank.JACK,   Suit.HEART),
+        Card(Rank.JACK,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.FIVE,    Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.CheckForFullHouse(cards) == 8_000 + Rank.JACK * 10 + Rank.FIVE)
 
 
 class TestGameClass(unittest.TestCase):
