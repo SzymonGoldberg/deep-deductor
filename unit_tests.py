@@ -122,7 +122,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.SEVEN,    Suit.DIAMOND)]
 
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) ==  10000 + Rank.FOUR * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) ==  10_000 + Rank.FOUR * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.FOUR,     Suit.DIAMOND),
@@ -142,7 +142,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.FIVE,     Suit.DIAMOND),
         Card(Rank.EIGHT,    Suit.DIAMOND),
         Card(Rank.SEVEN,    Suit.DIAMOND)]
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10000 + Rank.FIVE * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10_000 + Rank.FIVE * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.QUEEN,    Suit.DIAMOND),
@@ -153,7 +153,7 @@ class TestCardValidatorClass(unittest.TestCase):
         Card(Rank.TEN,      Suit.DIAMOND),
         Card(Rank.ACE,    Suit.DIAMOND)]
         
-        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10000 + Rank.TEN * 10 + Suit.DIAMOND)
+        self.assertTrue(self.cardValidator.checkForStraightFlush(cards) == 10_000 + Rank.TEN * 10 + Suit.DIAMOND)
 
         cards = [
         Card(Rank.QUEEN,  Suit.DIAMOND),
@@ -216,6 +216,187 @@ class TestCardValidatorClass(unittest.TestCase):
         
         self.assertTrue(self.cardValidator.CheckForFullHouse(cards) == 8_000 + Rank.JACK * 10 + Rank.FIVE)
 
+    def testFlush(self):
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.CLUB),
+        Card(Rank.SEVEN,    Suit.DIAMOND)]
+        self.assertTrue(self.cardValidator.checkForFlush(cards) == 7_000 + Rank.KING * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.NINE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.THREE,    Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.CLUB)]
+        self.assertTrue(self.cardValidator.checkForFlush(cards) == 7_000 + Rank.NINE * 10 + Suit.DIAMOND)
+
+    def testStraight(self):
+        cards = [
+        Card(Rank.FOUR,     Suit.CLUB),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.HEART)]
+
+        self.assertTrue(self.cardValidator.checkForStraight(cards) ==  6_000 + Rank.EIGHT * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.SIX,      Suit.HEART),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.DIAMOND)]
+
+        self.assertFalse(self.cardValidator.checkForStraight(cards))
+
+        cards = [
+        Card(Rank.FOUR,     Suit.CLUB),
+        Card(Rank.SIX,      Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.NINE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.CLUB),
+        Card(Rank.EIGHT,    Suit.DIAMOND),
+        Card(Rank.SEVEN,    Suit.CLUB)]
+
+        self.assertTrue(self.cardValidator.checkForStraight(cards) == 6_000 + Rank.NINE * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.QUEEN,    Suit.SPADE),
+        Card(Rank.JACK,     Suit.DIAMOND),
+        Card(Rank.KING,     Suit.HEART),
+        Card(Rank.FIVE,     Suit.DIAMOND),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.TEN,      Suit.DIAMOND),
+        Card(Rank.ACE,      Suit.CLUB)]
+        
+        self.assertTrue(self.cardValidator.checkForStraight(cards) == 6_000 + Rank.ACE * 10 + Suit.CLUB)
+
+    def testThreeOfKind(self):
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.JACK, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.FIVE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.ACE,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.checkForThreeOfKind(cards) == 5_000 + Rank.JACK * 10)
+
+        cards = [
+        Card(Rank.JACK,   Suit.DIAMOND),
+        Card(Rank.JACK,   Suit.HEART),
+        Card(Rank.JACK,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkForThreeOfKind(cards) == 5_000 + Rank.JACK * 10)
+
+    def testPairs(self):
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.ACE,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.checkForPairs(cards) == 4_000 + Rank.JACK * 10 + Rank.NINE)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.ACE,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkForPairs(cards) == 4_000 + Rank.ACE * 10 + Rank.FIVE)
+
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.FIVE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.ACE,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.checkForPairs(cards) == 3_000 + Rank.JACK * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.NINE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.TEN,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkForPairs(cards) == 3_000 + Rank.FOUR * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.THREE,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.NINE,   Suit.CLUB),
+        Card(Rank.KING,   Suit.SPADE),
+        Card(Rank.TEN,   Suit.DIAMOND),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertFalse(self.cardValidator.checkForPairs(cards))
+
+
+    def testHighestCard(self):
+
+        cards = [
+        Card(Rank.FOUR,   Suit.DIAMOND),
+        Card(Rank.FOUR,   Suit.HEART),
+        Card(Rank.TWO,   Suit.SPADE),
+        Card(Rank.FIVE,   Suit.CLUB),
+        Card(Rank.FIVE,   Suit.SPADE),
+        Card(Rank.ACE,   Suit.SPADE),
+        Card(Rank.ACE,    Suit.DIAMOND)]
+        
+        self.assertTrue(self.cardValidator.checkHighCard(cards) == 2_000 + Rank.ACE * 10 + Suit.SPADE)
+
+        cards = [
+        Card(Rank.JACK, Suit.DIAMOND),
+        Card(Rank.JACK, Suit.HEART),
+        Card(Rank.NINE, Suit.SPADE),
+        Card(Rank.TWO,  Suit.CLUB),
+        Card(Rank.FIVE, Suit.SPADE),
+        Card(Rank.TEN,  Suit.DIAMOND),
+        Card(Rank.KING,  Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.checkHighCard(cards) == 2_000 + Rank.KING * 10 + Suit.DIAMOND)
+
+        cards = [
+        Card(Rank.FOUR,     Suit.DIAMOND),
+        Card(Rank.FOUR,     Suit.HEART),
+        Card(Rank.TWO,      Suit.SPADE),
+        Card(Rank.EIGHT,    Suit.CLUB),
+        Card(Rank.FIVE,     Suit.SPADE),
+        Card(Rank.TEN,      Suit.CLUB),
+        Card(Rank.THREE,    Suit.DIAMOND)]
+
+        self.assertTrue(self.cardValidator.checkHighCard(cards) == 2_000 + Rank.TEN * 10 + Suit.CLUB)
 
 class TestGameClass(unittest.TestCase):
     def testThrowingBrokenPlayers(self):
