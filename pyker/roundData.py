@@ -29,12 +29,12 @@ class RoundData:
 
     def getCurrentPot(self):
         return self.pots[self.stage]
+        
+    def betUpdate(self, pot):
+        self.pots[self.stage] = pot
+        self.numOfBets += 1
 
-    def setCurrentPot(self, value):
-        self.pots[self.stage] = value
-
-    def moveToCash(self, localPot, move):
-        underPot = self.getCurrentPot() - localPot
+    def moveToCash(self, underPot, move):
         toCashDict = { 
             move.FOLD:  0,
             move.CHECK:  0,
@@ -48,18 +48,15 @@ class RoundData:
 
     def expectedMoves(self, underPot):
         if self.numOfBets in [0, 1]:    #first two bets are small and big blind
-            return [Move.BLIND]
+            return [Move.BLIND, Move.QUIT]
 
         return [Move.FOLD , Move.CALL, Move.RAISE, Move.QUIT
         ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET, Move.QUIT]
 
-    def affordableMoves(self, seat):
-        moves = self.expectedMoves(self.getCurrentPot() - seat.localPot)
-        return [x for x in moves if seat.player.cash >= self.moveToCash(seat.localPot, x)]
-
     def legalMoves(self, seat):
-        affordableMoves = self.affordableMoves(seat)
-        return [Move.QUIT] if affordableMoves == [Move.FOLD] else affordableMoves
-    
+        underPot = self.getCurrentPot() - seat.localPot
+        moves = self.expectedMoves(underPot)
+        return [x for x in moves if seat.player.cash >= self.moveToCash(underPot, x)]
+
     def addAction(self, seat):
         self.actions.append([seat.player.name, seat.move, self.stage])

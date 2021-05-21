@@ -10,29 +10,37 @@ class Game:
         self.players = players
         self.deck = None
         self.roundData = None
+        self.winner = None
+
+    def checkForWinner(self):
+        if len(self.players) < 2:
+            self.winner = self.players[0]    
 
     def makeBet(self, table):
-        seatWhoBet = table.seats.pop(0)
-        lastBetValue = seatWhoBet.bet(self.roundData)
+        if self.winner != None: return
 
-        if seatWhoBet.move == Move.QUIT:    self.players.remove(seatWhoBet.player)
+        seatWhoBet = table.seats.pop(0)
+        seatWhoBet.bet(self.roundData)
+
+        if seatWhoBet.move == Move.QUIT:    
+            self.players.remove(seatWhoBet.player)
+            self.checkForWinner()
+            return
         elif seatWhoBet.move != Move.FOLD:  table.seats.append(seatWhoBet)
 
-        self.roundData.setCurrentPot(table.maxLocalPool())
-        table.updateWaiting(self.roundData.getCurrentPot())
-
-        self.roundData.numOfBets += 1
-        print("current pot  = ", self.roundData.getCurrentPot(), " player pot = ", table.seats[-1].localPot)  #debug
-
-    def throwBrokenPlayers(self):
-        self.players = [x for x in self.players if x.cash > self.limit]
+        self.roundData.betUpdate(table.maxLocalPot())
+        table.updateWaiting()
 
     def bettingLoop(self, table):
         self.makeBet(table)
-        if table.isSomeoneWaiting(): self.bettingLoop(table)
+        if table.isSomeoneWaiting() and self.winner == None: self.bettingLoop(table)
+
+    def waitForBlinds(self, table):
+        self.makeBet(table)
+        if self.roundData.numOfBets > 2 and self.winner == None: self.waitForBlinds(table)
 
     def preFlopStage(self, table):
-        for i in range(2): self.makeBet(table) #small and big blinds
+        self.waitForBlinds(table)
         for seat in table.seats: seat.player.hand = self.deck.draw(2) #every player now get cards
         self.bettingLoop(table)
 
@@ -67,9 +75,12 @@ class Game:
 
         self.roundData.stage += 1
 
-    def StartRound(self):
-        self.throwBrokenPlayers()
+    def start(self):
         self.deck = Deck()
         self.roundData = RoundData(self.limit)
         table = Table(self.players)
         for i in range(4): self.stage(table)
+        
+        if self.winner == None:
+            self.start()
+        return self.winner

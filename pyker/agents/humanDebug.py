@@ -15,5 +15,3 @@ class HumanDebug(Agent):
             print("press ", i, " to ", move)
         
         return moveDict[int(input("choose action > "))]
-
-

@@ -43,11 +43,11 @@ class TestRoundData(unittest.TestCase):
 
         #check for blind functionality
         expectedMoves = self.roundData.expectedMoves(0)
-        self.assertEqual(expectedMoves, [Move.BLIND])
+        self.assertEqual(expectedMoves, [Move.BLIND, Move.QUIT])
 
         self.roundData.numOfBets = 1
         expectedMoves = self.roundData.expectedMoves(0)
-        self.assertEqual(expectedMoves, [Move.BLIND])
+        self.assertEqual(expectedMoves, [Move.BLIND, Move.QUIT])
 
         #check for normal round functionality
         self.roundData.numOfBets = 4
@@ -64,48 +64,6 @@ class TestRoundData(unittest.TestCase):
         self.assertTrue(Move.BET in expectedMoves)
         self.assertTrue(Move.QUIT in expectedMoves)
         self.assertTrue(len(expectedMoves) == 4)
-
-    def testAffordableMoves(self):
-
-        #blinds
-        player = Agent(15, "f00")
-        seat = Seat(player)
-        moves = self.roundData.affordableMoves(seat)
-        self.assertTrue(Move.BLIND in moves)
-        self.assertTrue(len(moves) == 1)
-
-        self.roundData.numOfBets = 1
-        moves = self.roundData.affordableMoves(seat)
-        self.assertTrue(Move.BLIND in moves)
-        self.assertTrue(len(moves) == 1)
-
-        #normal
-        self.roundData.numOfBets = 4
-        moves = self.roundData.affordableMoves(seat)
-        self.assertTrue(Move.QUIT in moves)
-        self.assertTrue(Move.BET in moves)
-        self.assertTrue(Move.CHECK in moves)
-        self.assertTrue(Move.FOLD in moves)
-        self.assertTrue(len(moves) == 4)
-
-        #under pot
-        self.roundData.setCurrentPot(10)
-        seat.player.cash = 100
-        moves = self.roundData.affordableMoves(seat)
-        self.assertTrue(Move.QUIT in moves)
-        self.assertTrue(Move.RAISE in moves)
-        self.assertTrue(Move.CALL in moves)
-        self.assertTrue(Move.FOLD in moves)
-        self.assertTrue(len(moves) == 4)
-
-        #not enough money for bet
-        self.roundData.setCurrentPot(15)
-        seat.player.cash = 15
-        moves = self.roundData.affordableMoves(seat)
-        self.assertTrue(Move.QUIT in moves)
-        self.assertTrue(Move.CALL in moves)
-        self.assertTrue(Move.FOLD in moves)
-        self.assertTrue(len(moves) == 3)
 
 class TestCardValidatorClass(unittest.TestCase):
     def setUp(self):
@@ -521,14 +479,6 @@ class TestCardValidatorClass(unittest.TestCase):
         self.assertTrue(self.cardValidator.combination(cards1) == 8_000 + Rank.JACK * 10 + Rank.FIVE)
 
         self.assertTrue(self.cardValidator.combination(cards) < self.cardValidator.combination(cards1))
-
-class TestGameClass(unittest.TestCase):
-    def testThrowingBrokenPlayers(self):
-        players = [Agent(1, "foo"), Agent(1, "bar"), Agent(1, "fun")]
-
-        game = Game(players, 12)
-        game.throwBrokenPlayers()
-        self.assertTrue(len(game.players) == 0)
 
 
 

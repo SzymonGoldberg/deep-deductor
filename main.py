@@ -6,4 +6,5 @@ playerList = [
     HumanDebug(1000, "bar")
 ]
 game = Game(playerList, 10)
-game.StartRound()
+winner = game.start()
+print(winner.name)
