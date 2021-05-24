@@ -1,5 +1,5 @@
 from .cards import Deck
-from .seat import Seat, Table
+from .seat import Table
 from .roundData import RoundData, Move
 
 #NOT DONE YET
@@ -8,8 +8,8 @@ class Game:
         assert(len(players) > 1)
         self.limit = limit
         self.players = players
+        self.roundData = RoundData(self.limit)
         self.deck = None
-        self.roundData = None
         self.table = None
         self.winner = None
         self.roundWinners = None
@@ -47,7 +47,7 @@ class Game:
             self.bettingLoop()
 
     def waitForBlinds(self):
-        if self.roundData.numOfBets > 2 and\
+        if self.roundData.numOfBets < 2 and\
            self.roundWinners == None and\
            self.winner == None: 
             self.makeBet()
@@ -74,7 +74,7 @@ class Game:
         self.bettingLoop()
 
     def showdown(self):
-        print("showdown") #DEBUG
+        print(self.roundData.bankroll)  #DEBUG
 
     def nextStage(self):
         StagesFuncs = [
@@ -93,7 +93,7 @@ class Game:
     def roundReset(self):
         self.roundWinners = None
         self.deck = Deck()
-        self.roundData = RoundData(self.limit)
+        self.roundData.roundReset(self.limit)
         self.table = Table(self.players)
         self.table.clearAllHands()
 

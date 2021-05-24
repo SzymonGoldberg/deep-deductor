@@ -5,7 +5,6 @@ class Seat:
         self.player = player
         self.move = None
         self.moveValue = 0
-        self.pot = 0
 
     def bet(self, roundData):
         self.move = self.player.bet(roundData.legalMoves(self), roundData)
@@ -14,11 +13,10 @@ class Seat:
 
         self.player.cash -= self.moveValue
         self.localPot += self.moveValue
-        self.pot += self.moveValue
         
         self.isWaiting = False
 
-        roundData.addAction(self)
+        roundData.bankroll += self.moveValue
         return self.moveValue
     
     def updateWaiting(self, pot):

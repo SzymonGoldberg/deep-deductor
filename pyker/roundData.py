@@ -22,7 +22,14 @@ class RoundData:
         self.numOfBets = 0              #number of bets in whole round               
         self.localLimit = limit         #limit for every betting tour
         self.pots = [0, 0, 0, 0]        #every tour pot
-        self.actions = []               #not done yet - I will use this to save data to disk
+        self.bankroll = 0
+
+    def roundReset(self, limit):
+        self.communityCards = []
+        self.stage = 0
+        self.numOfBets = 0
+        self.localLimit = limit
+        self.bankroll = 0
 
     def raiseLimit(self):
         self.localLimit *= 2
@@ -57,6 +64,3 @@ class RoundData:
         underPot = self.getCurrentPot() - seat.localPot
         moves = self.expectedMoves(underPot)
         return [x for x in moves if seat.player.cash >= self.moveToCash(underPot, x)]
-
-    def addAction(self, seat):
-        self.actions.append([seat.player.name, seat.move, self.stage])
