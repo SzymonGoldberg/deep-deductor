@@ -10,76 +10,96 @@ class Game:
         self.players = players
         self.deck = None
         self.roundData = None
+        self.table = None
         self.winner = None
+        self.roundWinners = None
 
-    def checkForWinner(self):
+    def checkForRoundWinners(self):
+        if self.table.numOfActiveSeats() < 2:
+            self.roundWinners = [self.table.seats[0]]
+
+    def checkForGameWinner(self):
         if len(self.players) < 2:
-            self.winner = self.players[0]    
+            self.winner = self.players[0]  
 
-    def makeBet(self, table):
-        if self.winner != None: return
-
-        seatWhoBet = table.seats.pop(0)
+    def makeBet(self):
+        seatWhoBet = self.table.seats.pop(0)
         seatWhoBet.bet(self.roundData)
 
         if seatWhoBet.move == Move.QUIT:    
             self.players.remove(seatWhoBet.player)
-            self.checkForWinner()
+            self.checkForGameWinner()
             return
-        elif seatWhoBet.move != Move.FOLD:  table.seats.append(seatWhoBet)
 
-        self.roundData.betUpdate(table.maxLocalPot())
-        table.updateWaiting()
+        elif seatWhoBet.move == Move.FOLD:  
+            self.checkForRoundWinners()
+            return
 
-    def bettingLoop(self, table):
-        self.makeBet(table)
-        if table.isSomeoneWaiting() and self.winner == None: self.bettingLoop(table)
+        self.table.seats.append(seatWhoBet)
+        self.roundData.betUpdate(self.table.maxLocalPot())
+        self.table.updateWaiting()
 
-    def waitForBlinds(self, table):
-        self.makeBet(table)
-        if self.roundData.numOfBets > 2 and self.winner == None: self.waitForBlinds(table)
+    def bettingLoop(self):
+        if self.table.isSomeoneWaiting() and\
+           self.roundWinners == None and\
+           self.winner == None:
+            self.makeBet()
+            self.bettingLoop()
 
-    def preFlopStage(self, table):
-        self.waitForBlinds(table)
-        for seat in table.seats: seat.player.hand = self.deck.draw(2) #every player now get cards
-        self.bettingLoop(table)
+    def waitForBlinds(self):
+        if self.roundData.numOfBets > 2 and\
+           self.roundWinners == None and\
+           self.winner == None: 
+            self.makeBet()
+            self.waitForBlinds()
+
+    def preFlopStage(self):
+        self.waitForBlinds()
+        for seat in self.table.seats: 
+            seat.player.hand = self.deck.draw(2) #every player now get cards    #smth is not ok here
+        self.bettingLoop()
 
         self.roundData.communityCards.extend(self.deck.draw(3)) #flop going onto the table
 
-    def flopStage(self, table):
-        self.bettingLoop(table)
+    def flopStage(self):
+        self.bettingLoop()
         self.roundData.communityCards.extend(self.deck.draw(1))
         self.roundData.raiseLimit()
 
-    def turnStage(self, table):
-        self.bettingLoop(table)
+    def turnStage(self):
+        self.bettingLoop()
         self.roundData.communityCards.extend(self.deck.draw(1))
 
-    def riverStage(self, table):
-        self.bettingLoop(table)
-        self.showdown()
+    def riverStage(self):
+        self.bettingLoop()
 
     def showdown(self):
-        pass
+        print("showdown") #DEBUG
 
-    def stage(self, table):
+    def nextStage(self):
         StagesFuncs = [
             self.preFlopStage, 
             self.flopStage, 
             self.turnStage, 
-            self.riverStage
+            self.riverStage,
+            self.showdown
         ]
         print("stage = ", self.roundData.stage)     #debug
-        StagesFuncs[self.roundData.stage](table)
-        table.stageReset()
+        StagesFuncs[self.roundData.stage]()
+        self.table.stageReset()
 
         self.roundData.stage += 1
 
-    def start(self):
+    def roundReset(self):
+        self.roundWinners = None
         self.deck = Deck()
         self.roundData = RoundData(self.limit)
-        table = Table(self.players)
-        for i in range(4): self.stage(table)
+        self.table = Table(self.players)
+        self.table.clearAllHands()
+
+    def start(self):
+        self.roundReset()
+        for i in range(5): self.nextStage()
         
         if self.winner == None:
             self.start()

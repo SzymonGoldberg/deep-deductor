@@ -39,8 +39,14 @@ class Table:
     def stageReset(self):
         for seat in self.seats: seat.stageReset()
 
+    def clearAllHands(self):
+        for seat in self.seats: seat.player.clearHand()
+
     def isSomeoneWaiting(self):
         return bool(max([x.isWaiting for x in self.seats]))
 
     def maxLocalPot(self):
         return max(x.localPot for x in self.seats)
+
+    def numOfActiveSeats(self):
+        return len(self.seats)
