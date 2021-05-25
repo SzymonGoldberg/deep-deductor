@@ -22,6 +22,7 @@ class RoundData:
         self.numOfBets = 0              #number of bets in whole round               
         self.localLimit = limit         #limit for every betting tour
         self.pots = [0, 0, 0, 0]        #every tour pot
+        self.actions = []
         self.bankroll = 0
 
     def raiseLimit(self):
@@ -37,9 +38,9 @@ class RoundData:
     def moveToCash(self, underPot, move):
         toCashDict = { 
             move.FOLD:  0,
-            move.CHECK:  0,
+            move.CHECK: 0,
             move.QUIT:  0,
-            move.CALL: underPot,
+            move.CALL:  underPot,
             move.BET:   self.localLimit,
             move.RAISE: self.localLimit + underPot,
             move.BLIND: self.localLimit / (1 if self.numOfBets else 2)
@@ -57,3 +58,6 @@ class RoundData:
         underPot = self.getCurrentPot() - seat.localPot
         moves = self.expectedMoves(underPot)
         return [x for x in moves if seat.player.cash >= self.moveToCash(underPot, x)]
+
+    def addAction(self, name, move):
+        self.actions.append((name, move))

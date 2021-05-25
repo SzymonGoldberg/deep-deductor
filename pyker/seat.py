@@ -16,6 +16,7 @@ class Seat:
         self.player.cash -= self.moveValue
         self.localPot += self.moveValue
         
+        roundData.addAction(self.player.name, self.move)
         self.isWaiting = False
 
         roundData.bankroll += self.moveValue
@@ -28,7 +29,6 @@ class Seat:
         self.localPot = 0
         self.isWaiting = True
 
-#TODO this class is taking care about all seats
 class Table:
     def __init__(self, players):
         self.seats = [Seat(player) for player in players]
