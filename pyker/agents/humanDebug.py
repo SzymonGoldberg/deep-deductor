@@ -8,6 +8,11 @@ class HumanDebug(Agent):
         for card in self.hand:
             print(card.asString())
 
+        print("on table: ")
+        for card in roundData.communityCards:
+            print(card.asString(), end=' ')
+        print()
+
         print("choose your move: ")
         moveDict = dict()
         for i, move in enumerate(moves):

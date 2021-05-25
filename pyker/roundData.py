@@ -24,13 +24,6 @@ class RoundData:
         self.pots = [0, 0, 0, 0]        #every tour pot
         self.bankroll = 0
 
-    def roundReset(self, limit):
-        self.communityCards = []
-        self.stage = 0
-        self.numOfBets = 0
-        self.localLimit = limit
-        self.bankroll = 0
-
     def raiseLimit(self):
         self.localLimit *= 2
 

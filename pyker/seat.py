@@ -1,3 +1,5 @@
+from .cardValidator import CardValidator
+
 class Seat:
     def __init__(self, player):
         self.isWaiting = True
@@ -30,6 +32,7 @@ class Seat:
 class Table:
     def __init__(self, players):
         self.seats = [Seat(player) for player in players]
+        self.cardvalid = CardValidator()
 
     def updateWaiting(self):
         for seat in self.seats: seat.updateWaiting(self.maxLocalPot())
@@ -48,3 +51,19 @@ class Table:
 
     def numOfActiveSeats(self):
         return len(self.seats)
+
+    def appendAllHands(self, cards):
+        for seat in self.seats: seat.player.hand.extend(cards)
+
+    def getPointsHands(self):
+        return [self.cardvalid.combination(x.player.hand) for x in self.seats]
+
+    def showdown(self, roundData):
+        self.appendAllHands(roundData.communityCards)
+        pointList = self.getPointsHands()
+        highestHand = max(pointList)
+        winningSeats = [x for x in range(len(pointList)) if pointList[x] == highestHand]
+        
+        cashWin = roundData.bankroll // len(winningSeats)
+        for i, seat in enumerate(self.seats):
+            if i in winningSeats: seat.player.cash += cashWin

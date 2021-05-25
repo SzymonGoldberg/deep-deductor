@@ -56,7 +56,7 @@ class Game:
     def preFlopStage(self):
         self.waitForBlinds()
         for seat in self.table.seats: 
-            seat.player.hand = self.deck.draw(2) #every player now get cards    #smth is not ok here
+            seat.player.hand = self.deck.draw(2) #every player now get cards
         self.bettingLoop()
 
         self.roundData.communityCards.extend(self.deck.draw(3)) #flop going onto the table
@@ -72,9 +72,7 @@ class Game:
 
     def riverStage(self):
         self.bettingLoop()
-
-    def showdown(self):
-        print(self.roundData.bankroll)  #DEBUG
+        self.table.showdown(self.roundData)
 
     def nextStage(self):
         StagesFuncs = [
@@ -82,7 +80,6 @@ class Game:
             self.flopStage, 
             self.turnStage, 
             self.riverStage,
-            self.showdown
         ]
         print("stage = ", self.roundData.stage)     #debug
         StagesFuncs[self.roundData.stage]()
@@ -90,17 +87,19 @@ class Game:
 
         self.roundData.stage += 1
 
+    def rotateQueue(self):
+        self.players = self.players[-1:] + self.players[:-1]
+
     def roundReset(self):
         self.roundWinners = None
         self.deck = Deck()
-        self.roundData.roundReset(self.limit)
+        self.roundData = RoundData(self.limit)
         self.table = Table(self.players)
         self.table.clearAllHands()
+        self.rotateQueue()
 
     def start(self):
         self.roundReset()
-        for i in range(5): self.nextStage()
-        
-        if self.winner == None:
-            self.start()
+        for i in range(4): self.nextStage()
+        if self.winner == None: self.start()
         return self.winner
