@@ -5,6 +5,7 @@ class HumanDebug(Agent):
         for action in roundData.actions:
             print("player -> ", action[0]," action -> ", action[1])
 
+        print("stage = ", roundData.stage)
         print("you are as player ", self.name)
         print("you account: ", self.cash)
         print("you hand: ")

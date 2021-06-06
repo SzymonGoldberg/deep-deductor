@@ -63,6 +63,9 @@ class Table:
         pointList = self.getPointsHands()
         highestHand = max(pointList)
         winningSeats = [x for x in range(len(pointList)) if pointList[x] == highestHand]
+        print("round winners")
+        for x in winningSeats:
+            print('\t -> ', self.seats[x].player.name)
         
         cashWin = roundData.bankroll // len(winningSeats)
         for i, seat in enumerate(self.seats):

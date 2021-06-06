@@ -29,6 +29,7 @@ class Game:
         if seatWhoBet.move == Move.QUIT:    
             self.players.remove(seatWhoBet.player)
             self.checkForGameWinner()
+            self.checkForRoundWinners()
             return
 
         elif seatWhoBet.move == Move.FOLD:  
@@ -81,7 +82,6 @@ class Game:
             self.turnStage, 
             self.riverStage,
         ]
-        print("stage = ", self.roundData.stage)     #debug
         StagesFuncs[self.roundData.stage]()
         self.table.stageReset()
 
