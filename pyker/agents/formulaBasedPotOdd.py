@@ -2,7 +2,7 @@ from pyker.roundData import Move
 from pyker.agents.base import Agent
 from pyker.cardValidator import CardValidator
 
-class FormulaBasedAgent(Agent):
+class FormulaBasedPotOddAgent(Agent):
     cardValidator = CardValidator()
     def bet(self, moves, roundData):
         if roundData.stage == 0:
@@ -13,9 +13,13 @@ class FormulaBasedAgent(Agent):
 
         handValue = self.cardValidator.combination(self.hand + roundData.communityCards)
         ihr = (handValue)/10_143
+        potOdd = roundData.localLimit / roundData.bankroll + roundData.localLimit
+
         print('-------------formula based------------\nhands: ')
         [print(x.asString()) for x in self.hand]
         print('ihr > ', ihr)
+        print('potodd > ', potOdd)
+
         if ihr > 0.35:
             if Move.BET in moves: return Move.BET
             elif Move.RAISE in moves: return Move.RAISE
