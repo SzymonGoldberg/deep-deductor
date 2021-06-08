@@ -12,7 +12,7 @@ class FormulaBasedAgent(Agent):
             return Move.QUIT
 
         handValue = self.cardValidator.combination(self.hand + roundData.communityCards)
-        ihr = (handValue)/10_143
+        ihr = (handValue)/(10_143 - 2020)
         print('-------------formula based------------\nhands: ')
         [print(x.asString()) for x in self.hand]
         print('ihr > ', ihr)
