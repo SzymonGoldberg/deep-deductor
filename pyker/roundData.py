@@ -1,4 +1,8 @@
 from enum import IntEnum
+import itertools as it
+
+class BetEnded(Exception): pass
+class LastPlayerLeft(Exception): pass
 
 class Move(IntEnum):
     BLIND = 0
@@ -9,55 +13,82 @@ class Move(IntEnum):
     RAISE = 6
     QUIT = 7
 
-#         pre-flop, flop, turn, river
-stages = ['pf', 'f', 't', 'r']
+class CommunityData:
+    def __init__(self, limit :int) -> None:
+        self.communityCards = []
+        self.limit = limit
+        self.actions = [[]]
+        self.maxPot = 0
+    
+    def getNumOfBlinds(self) -> int:   #tuple 'cause its faster than list()
+        return len(tuple(filter(lambda x: x[1] == Move.BLIND, self.actions[0])))
 
+class BetQueue:
+    def __init__(self, limit :int, players :list) -> None:
+        self.initAfterFoldAndCommData(limit)
+        self.waiting = players  #players who do not bet yet
 
-class RoundData:
-    """Structure with data which can be accessed in any time by any player
-    """
-    def __init__(self, limit):
-        self.communityCards = []        #cards visible for every player
-        self.stage = 0                  #current game stage (pref=0, flop=0, turn=0, river=0)
-        self.numOfBets = 0              #number of bets in whole round               
-        self.localLimit = limit         #limit for every betting tour
-        self.pots = [0, 0, 0, 0]        #every tour pot
-        self.actions = []
-        self.bankroll = 0
+    def initAfterFoldAndCommData(self, limit):
+        self.communityData = CommunityData(limit)
+        self.after = []     #players who are after their bets
+        self.fold = []      #playesr who folded
 
-    def raiseLimit(self):
-        self.localLimit *= 2
+    def reset(self, limit :int):
+        self.waiting.extend(self.after + self.fold)
+        self.initAfterFoldAndCommData(limit)
+        for player in self.waiting:
+            player.dealerIdx -= 1
+            if player.dealerIdx < 0:
+                player.dealerIdx = len(self.waiting) - 1
+            player.clearHandAndPot()
 
-    def getCurrentPot(self):
-        return self.pots[self.stage]
-        
-    def betUpdate(self, pot):
-        self.pots[self.stage] = pot
-        self.numOfBets += 1
+        self.waiting.sort(key=lambda x: x.dealerIdx)
 
-    def moveToCash(self, underPot, move):
-        toCashDict = { 
-            move.FOLD:  0,
-            move.CHECK: 0,
-            move.QUIT:  0,
-            move.CALL:  underPot,
-            move.BET:   self.localLimit,
-            move.RAISE: self.localLimit + underPot,
-            move.BLIND: self.localLimit / (1 if self.numOfBets else 2)
-        }
-        return toCashDict[move]
+    def blindLoop(self) -> None:
+        self.loop(lambda x, y : y.getNumOfBlinds() < 2)
 
-    def expectedMoves(self, underPot):
-        if self.numOfBets in [0, 1]:    #first two bets are small and big blind
-            return [Move.BLIND, Move.QUIT]
+    def betLoop(self) -> None:
+        self.loop(lambda x, y: len(x) > 0)
 
-        return [Move.FOLD , Move.CALL, Move.RAISE, Move.QUIT
-        ] if (underPot > 0) else [Move.FOLD, Move.CHECK, Move.BET, Move.QUIT]
+        self.waiting.extend(self.after)
+        self.after.clear()
+        self.waiting.sort(key=lambda x: x.dealerIdx)
+        self.communityData.actions.append([])
 
-    def legalMoves(self, seat):
-        underPot = self.getCurrentPot() - seat.localPot
-        moves = self.expectedMoves(underPot)
-        return [x for x in moves if seat.player.cash >= self.moveToCash(underPot, x)]
+    def extendCommCards(self, cards):
+        self.communityData.communityCards.extend(cards)
 
-    def addAction(self, name, move):
-        self.actions.append((name, move))
+    def getCommCards(self):
+        return self.communityData.communityCards
+
+    def getBankroll(self):
+        return sum(map(lambda x: x[2], list(it.chain(*self.communityData.actions))))
+
+    def getPlayers(self) -> list:
+        return self.waiting + self.after + self.fold
+
+    def getNonFoldingPlayers(self) -> list:
+        return self.waiting + self.after
+
+    def getNumOfInGamePlayers(self) -> int:
+        return len(self.after) + len(self.waiting)
+
+    def getNumOfPlayers(self) -> int:
+        return len(self.after) + len(self.waiting) + len(self.fold)
+
+    def loop(self, statement) -> None:
+        while statement(self.waiting, self.communityData):
+            player = self.waiting.pop(0)
+            move = player.bet(self.communityData)
+            
+            if move in [Move.RAISE, Move.BET, Move.BLIND]: #raising moves
+                self.waiting.extend(self.after)
+                self.after = [player]
+                self.communityData.maxPot = player.inPot
+            elif move == Move.FOLD:
+                self.fold.append(player)
+            elif move != Move.QUIT:
+                self.after.append(player)
+   
+            if self.getNumOfPlayers() < 2:      raise LastPlayerLeft()
+            if self.getNumOfInGamePlayers() < 2:raise BetEnded()

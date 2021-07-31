@@ -2,6 +2,7 @@ from .cards import *
 from operator import attrgetter
 
 class CardValidator:
+    @classmethod
     def combination(self, cards):
         funcList = [
             self.checkForStraightFlush,
@@ -13,7 +14,7 @@ class CardValidator:
             self.checkForPairs,
             self.checkHighCard]
         return max([x(cards) for x in funcList])
-
+    @classmethod
     def groupCardsIf(self, cards, ifStatement, appendStatement):
         groups = []
         for cardIter in cards:
@@ -27,7 +28,7 @@ class CardValidator:
                 groups.append(group[-1])
 
         return groups
-
+    @classmethod
     def checkForStraightFlush(self, cards):
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
         straightFlushes = self.groupCardsIf(
@@ -39,7 +40,7 @@ class CardValidator:
             maxstr = max(straightFlushes)
             return 10_000 + maxstr.rank * 10 + maxstr.suit
         return False
-
+    @classmethod
     def checkForFourOfKind(self, cards):
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
         fours = self.groupCardsIf(
@@ -52,21 +53,21 @@ class CardValidator:
             return 9_000 + maxFour.rank * 10 + maxFour.suit
 
         return False
-    
+    @classmethod
     def findAllThree(self, cards):
         threes = self.groupCardsIf(
             cards,
             lambda x, y, z: (x.rank == y.rank),
             lambda x: x >= 3)
         return list(set(threes))
-
+    @classmethod
     def findAllPairs(self, cards):
         pairs = self.groupCardsIf(
             cards, 
             lambda x, y, z: (x.rank == y.rank),
             lambda x: x >= 2)
         return list(set(pairs))        
-
+    @classmethod
     def CheckForFullHouse(self, cards):
         threes = self.findAllThree(cards)
         if len(threes) == 0: return False
@@ -80,7 +81,7 @@ class CardValidator:
         maxPair = max(pairs)
         return 8_000 + maxThree.rank * 10 + maxPair.rank
 
-    
+    @classmethod
     def checkForFlush(self, cards):
         sortedCards = sorted(cards, key=attrgetter('suit', 'rank'))
         straightFlushes = self.groupCardsIf(
@@ -92,7 +93,7 @@ class CardValidator:
             maxstr = max(straightFlushes)
             return 7_000 + maxstr.rank * 10 + maxstr.suit
         return False
-
+    @classmethod
     def checkForStraight(self, cards):
         sortedCards = sorted(cards, key=attrgetter('rank', 'suit'))
         straightHands = self.groupCardsIf(
@@ -104,13 +105,13 @@ class CardValidator:
             maxstr = max(straightHands)
             return 6_000 + maxstr.rank * 10 + maxstr.suit
         return False
-
+    @classmethod
     def checkForThreeOfKind(self,cards):
         threes = self.findAllThree(cards)
         if len(threes) > 0:
             return 5_000 + max(threes).rank * 10
         return False
-
+    @classmethod
     def checkForPairs(self,cards):
         pairs = self.findAllPairs(cards)
         if len(pairs) == 0: return False
@@ -122,7 +123,7 @@ class CardValidator:
         
         maxPair2 = max(pairs)
         return 4_000 + maxPair1.rank * 10 + maxPair2.rank
-
+    @classmethod
     def checkHighCard(self, cards):
         highestCard = max(cards, key= attrgetter('rank', 'suit'))
         return 2_000 + highestCard.rank * 10 + highestCard.suit

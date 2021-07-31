@@ -60,8 +60,7 @@ class Deck():
     """ Class represents all cards used in single game"""
     def __init__(self):
         """ class is initialized as classic deck with all 52"""
-        self.cards = [Card(x, y) for x in Rank for y in Suit]
-        random.shuffle(self.cards)
+        self.reset()
 
     def draw(self, n):
         """ Returns n cards from the deck. If deck is smaller than n it returns empty list"""
@@ -71,6 +70,9 @@ class Deck():
             del self.cards[:n]
         return output
 
+    def reset(self):
+        self.cards = [Card(x, y) for x in Rank for y in Suit]
+        random.shuffle(self.cards)
 
 if __name__ == '__main__':
     deck = Deck()

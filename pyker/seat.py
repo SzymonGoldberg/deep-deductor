@@ -1,75 +1,39 @@
+from pyker.roundData import CommunityData
 from .cardValidator import CardValidator
+from .moveValidator import MoveValidator
 
-class Seat:
-    def __init__(self, player):
-        self.isWaiting = True
-        self.localPot = 0
-        self.player = player
-        self.move = None
-        self.moveValue = 0
+class NotEnoughCashException(Exception): pass
+class IllegalMoveException(Exception): pass
 
-    def bet(self, roundData):
-        self.move = self.player.bet(roundData.legalMoves(self), roundData)
-        underpot = roundData.getCurrentPot() - self.localPot
-        self.moveValue = roundData.moveToCash(underpot, self.move)
+class PlayerWrapper:
+    def __init__(self, dealerIndex :int, agent) -> None:
+        self.agent = agent
+        self.inPot = 0
+        self.dealerIdx = dealerIndex
 
-        self.player.cash -= self.moveValue
-        self.localPot += self.moveValue
-        
-        roundData.addAction(self.player.name, self.move)
-        self.isWaiting = False
+    def bet(self, communityData :CommunityData):
+        move = self.agent.bet(communityData, self.inPot)
+        amount = MoveValidator.moveToCash(communityData, self.inPot, move)
+        if amount > self.agent.balance: 
+            raise NotEnoughCashException
+        if not move in MoveValidator.legalMoves(communityData, self.inPot):
+            raise IllegalMoveException()
 
-        roundData.bankroll += self.moveValue
-        return self.moveValue
-    
-    def updateWaiting(self, pot):
-        if pot > self.localPot: self.isWaiting = True
+        self.agent.balance -= amount
+        self.inPot += amount
 
-    def stageReset(self):
-        self.localPot = 0
-        self.isWaiting = True
+        communityData.actions[-1].append((self.agent.name, move, amount))
+        return move
 
-class Table:
-    def __init__(self, players):
-        self.seats = [Seat(player) for player in players]
-        self.cardvalid = CardValidator()
+    def clearHandAndPot(self):
+        self.agent.clearHand()
+        self.inPot = 0
 
-    def updateWaiting(self):
-        for seat in self.seats: seat.updateWaiting(self.maxLocalPot())
+    def incrBalance(self, num :int):
+        self.agent.balance += num
 
-    def stageReset(self):
-        for seat in self.seats: seat.stageReset()
+    def getHand(self):
+        return self.agent.hand
 
-    def clearAllHands(self):
-        for seat in self.seats: seat.player.clearHand()
-
-    def isSomeoneWaiting(self):
-        return bool(max([x.isWaiting for x in self.seats]))
-
-    def maxLocalPot(self):
-        return max(x.localPot for x in self.seats)
-
-    def numOfActiveSeats(self):
-        return len(self.seats)
-
-    def appendAllHands(self, cards):
-        for seat in self.seats: seat.player.hand.extend(cards)
-
-    def getPointsHands(self):
-        return [self.cardvalid.combination(x.player.hand) for x in self.seats]
-
-    def showdown(self, roundData):
-        self.appendAllHands(roundData.communityCards)
-        pointList = self.getPointsHands()
-        highestHand = max(pointList)
-        winningSeats = [x for x in range(len(pointList)) if pointList[x] == highestHand]
-        print("round winners")
-        for x in winningSeats:
-            print(' -> ', self.seats[x].player.name, 'hand: ')
-            for card in self.seats[x].player.hand:
-                print(card.asString(),end='')
-            print('')
-        
-        cashWin = roundData.bankroll // len(winningSeats)
-        for i, seat in enumerate(self.seats):
-            if i in winningSeats: seat.player.cash += cashWin
+    def __repr__(self):
+        return self.agent.name
