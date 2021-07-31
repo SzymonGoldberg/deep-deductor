@@ -1,4 +1,4 @@
-from pyker.roundData import Move, CommunityData
+from pyker.betQueue import Move, CommunityData
 
 class MoveValidator:
     @classmethod

@@ -1,4 +1,4 @@
-from .roundData import BetQueue, BetEnded, LastPlayerLeft
+from .betQueue import BetQueue, BetEnded, LastPlayerLeft
 from pyker.cardValidator import CardValidator
 from .seat import PlayerWrapper
 
@@ -9,18 +9,18 @@ class Game:
         self.limit = limit
         self.betQueue = BetQueue(self.limit, [PlayerWrapper(*n) for n in enumerate(agents)])
 
-    def drawCommunityCards(self, numOfCards :int) -> None:
+    def __drawCommunityCards(self, numOfCards :int) -> None:
         self.betQueue.extendCommCards(self.deck.draw(numOfCards))
 
-    def roundReset(self) -> None:
+    def __prepareNextRound(self) -> None:
         self.deck.reset()
         self.betQueue.reset(self.limit)
 
-    def dealCards(self) -> None:
-        for player in self.betQueue.getPlayers():
+    def __dealCards(self) -> None:
+        for player in self.betQueue.getNonFoldingPlayers():
             player.agent.hand.extend(self.deck.draw(2))
 
-    def showdown(self) -> None:
+    def __showdown(self) -> None:
         maxList, max, players = [], 0, self.betQueue.getNonFoldingPlayers()
         for player in players:
             temp = CardValidator.combination(player.getHand() + self.betQueue.getCommCards())
@@ -36,24 +36,24 @@ class Game:
                 player.incrBalance(prize)
                 print(player, ' prize = ', prize)
 
-    def raiseLimit(self) -> None:
+    def __raiseLimit(self) -> None:
         self.betQueue.communityData.limit *= 2
 
     def bets(self) -> None:
         try:
         #blinds
             self.betQueue.blindLoop()
-            self.dealCards()
+            self.__dealCards()
         #pre-flop
             self.betQueue.betLoop()
-            self.drawCommunityCards(3)
+            self.__drawCommunityCards(3)
         #flop
             self.betQueue.betLoop()
-            self.drawCommunityCards(1)
-            self.raiseLimit()
+            self.__drawCommunityCards(1)
+            self.__raiseLimit()
         #river
             self.betQueue.betLoop()
-            self.drawCommunityCards(1)
+            self.__drawCommunityCards(1)
         #turn
             self.betQueue.betLoop()
         except BetEnded: pass
@@ -62,7 +62,7 @@ class Game:
         try:
             while True:
                 self.bets()
-                self.showdown()
-                self.roundReset()
+                self.__showdown()
+                self.__prepareNextRound()
         except LastPlayerLeft:
-            return self.betQueue.getPlayers()[0]
+            return (self.betQueue.waiting + self.betQueue.after + self.betQueue.fold)[0]

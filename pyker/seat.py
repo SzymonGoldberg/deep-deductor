@@ -1,5 +1,4 @@
-from pyker.roundData import CommunityData
-from .cardValidator import CardValidator
+from pyker.betQueue import CommunityData
 from .moveValidator import MoveValidator
 
 class NotEnoughCashException(Exception): pass

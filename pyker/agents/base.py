@@ -1,6 +1,4 @@
-
-from pyker.roundData import CommunityData
-
+from pyker.betQueue import CommunityData
 
 class Agent:
     """ Player card which contain points and hand (cards)

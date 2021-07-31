@@ -25,17 +25,17 @@ class CommunityData:
 
 class BetQueue:
     def __init__(self, limit :int, players :list) -> None:
-        self.initAfterFoldAndCommData(limit)
+        self.__initAfterFoldAndCommData(limit)
         self.waiting = players  #players who do not bet yet
 
-    def initAfterFoldAndCommData(self, limit):
+    def __initAfterFoldAndCommData(self, limit):
         self.communityData = CommunityData(limit)
         self.after = []     #players who are after their bets
-        self.fold = []      #playesr who folded
+        self.fold = []      #players who folded
 
     def reset(self, limit :int):
         self.waiting.extend(self.after + self.fold)
-        self.initAfterFoldAndCommData(limit)
+        self.__initAfterFoldAndCommData(limit)
         for player in self.waiting:
             player.dealerIdx -= 1
             if player.dealerIdx < 0:
@@ -45,10 +45,10 @@ class BetQueue:
         self.waiting.sort(key=lambda x: x.dealerIdx)
 
     def blindLoop(self) -> None:
-        self.loop(lambda x, y : y.getNumOfBlinds() < 2)
+        self.__loop(lambda x, y : y.getNumOfBlinds() < 2)
 
     def betLoop(self) -> None:
-        self.loop(lambda x, y: len(x) > 0)
+        self.__loop(lambda x, y: len(x) > 0)
 
         self.waiting.extend(self.after)
         self.after.clear()
@@ -58,25 +58,13 @@ class BetQueue:
     def extendCommCards(self, cards):
         self.communityData.communityCards.extend(cards)
 
-    def getCommCards(self):
-        return self.communityData.communityCards
-
     def getBankroll(self):
         return sum(map(lambda x: x[2], list(it.chain(*self.communityData.actions))))
-
-    def getPlayers(self) -> list:
-        return self.waiting + self.after + self.fold
-
-    def getNonFoldingPlayers(self) -> list:
-        return self.waiting + self.after
-
-    def getNumOfInGamePlayers(self) -> int:
-        return len(self.after) + len(self.waiting)
 
     def getNumOfPlayers(self) -> int:
         return len(self.after) + len(self.waiting) + len(self.fold)
 
-    def loop(self, statement) -> None:
+    def __loop(self, statement) -> None:
         while statement(self.waiting, self.communityData):
             player = self.waiting.pop(0)
             move = player.bet(self.communityData)
@@ -90,5 +78,8 @@ class BetQueue:
             elif move != Move.QUIT:
                 self.after.append(player)
    
-            if self.getNumOfPlayers() < 2:      raise LastPlayerLeft()
-            if self.getNumOfInGamePlayers() < 2:raise BetEnded()
+            if self.getNumOfPlayers() < 2:          raise LastPlayerLeft()
+            if len(self.getNonFoldingPlayers()) < 2:raise BetEnded()
+
+    def getCommCards(self): return self.communityData.communityCards
+    def getNonFoldingPlayers(self) -> list: return self.waiting + self.after

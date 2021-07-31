@@ -73,8 +73,3 @@ class Deck():
     def reset(self):
         self.cards = [Card(x, y) for x in Rank for y in Suit]
         random.shuffle(self.cards)
-
-if __name__ == '__main__':
-    deck = Deck()
-    for elem in deck.cards:
-        print(elem.asString())
