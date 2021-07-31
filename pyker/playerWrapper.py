@@ -1,10 +1,14 @@
 from pyker.betQueue import CommunityData
-from .moveValidator import MoveValidator
+from .moveValidator import MoveValidator as mv
 
 class NotEnoughCashException(Exception): pass
 class IllegalMoveException(Exception): pass
 
 class PlayerWrapper:
+    """This class is wrapper around player class, used to make bets and saving 
+    data easier, its contains amount of cash inserted into pot by player and 
+    distance from dealer in dealeridx"""
+
     def __init__(self, dealerIndex :int, agent) -> None:
         self.agent = agent
         self.inPot = 0
@@ -12,10 +16,10 @@ class PlayerWrapper:
 
     def bet(self, communityData :CommunityData):
         move = self.agent.bet(communityData, self.inPot)
-        amount = MoveValidator.moveToCash(communityData, self.inPot, move)
+        amount = mv.moveToCash(communityData, self.inPot, move)
         if amount > self.agent.balance: 
             raise NotEnoughCashException
-        if not move in MoveValidator.legalMoves(communityData, self.inPot):
+        if not move in mv.legalMoves(communityData, self.inPot):
             raise IllegalMoveException()
 
         self.agent.balance -= amount
