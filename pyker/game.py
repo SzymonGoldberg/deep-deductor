@@ -1,13 +1,13 @@
 from .betQueue import BetQueue, BetEnded, LastPlayerLeft
 from pyker.cardValidator import CardValidator
-from .seat import PlayerWrapper
+from .playerWrapper import PlayerWrapper
 
 class Game:
     def __init__(self, agents :list, deck, limit :int) -> None:
         assert(12 > len(agents) > 1 and limit > 1)
         self.deck = deck
         self.limit = limit
-        self.betQueue = BetQueue(self.limit, [PlayerWrapper(*n) for n in enumerate(agents)])
+        self.betQueue = BetQueue(limit, [PlayerWrapper(*n) for n in enumerate(agents)])
 
     def __drawCommunityCards(self, numOfCards :int) -> None:
         self.betQueue.extendCommCards(self.deck.draw(numOfCards))
@@ -41,21 +41,16 @@ class Game:
 
     def bets(self) -> None:
         try:
-        #blinds
-            self.betQueue.blindLoop()
+            self.betQueue.blindLoop()       #blinds
             self.__dealCards()
-        #pre-flop
-            self.betQueue.betLoop()
+            self.betQueue.betLoop()         #pre-flop
             self.__drawCommunityCards(3)
-        #flop
-            self.betQueue.betLoop()
+            self.betQueue.betLoop()         #flop
             self.__drawCommunityCards(1)
             self.__raiseLimit()
-        #river
-            self.betQueue.betLoop()
+            self.betQueue.betLoop()         #river
             self.__drawCommunityCards(1)
-        #turn
-            self.betQueue.betLoop()
+            self.betQueue.betLoop()         #turn
         except BetEnded: pass
 
     def start(self):
