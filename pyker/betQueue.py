@@ -5,13 +5,13 @@ class BetEnded(Exception): pass
 class LastPlayerLeft(Exception): pass
 
 class Move(IntEnum):
-    BLIND = 0
-    FOLD = 2
-    CHECK = 3
-    BET = 4
-    CALL = 5
-    RAISE = 6
-    QUIT = 7
+    BLIND   = 0
+    FOLD    = 2
+    CHECK   = 3
+    BET     = 4
+    CALL    = 5
+    RAISE   = 6
+    QUIT    = 7
 
 class CommunityData:
     def __init__(self, limit :int) -> None:
@@ -37,9 +37,8 @@ class BetQueue:
         self.waiting.extend(self.after + self.fold)
         self.__initAfterFoldAndCommData(limit)
         for player in self.waiting:
-            player.dealerIdx -= 1
-            if player.dealerIdx < 0:
-                player.dealerIdx = len(self.waiting) - 1
+            idx = player.dealerIdx - 1
+            player.dealerIdx = idx if idx > 0 else len(self.waiting) - 1
             player.clearHandAndPot()
 
         self.waiting.sort(key=lambda x: x.dealerIdx)
@@ -51,8 +50,8 @@ class BetQueue:
         self.__loop(lambda x, y: len(x) > 0)
 
         self.waiting.extend(self.after)
-        self.after.clear()
         self.waiting.sort(key=lambda x: x.dealerIdx)
+        self.after.clear()
         self.communityData.actions.append([])
 
     def extendCommCards(self, cards):
@@ -60,9 +59,6 @@ class BetQueue:
 
     def getBankroll(self):
         return sum(map(lambda x: x[2], list(it.chain(*self.communityData.actions))))
-
-    def getNumOfPlayers(self) -> int:
-        return len(self.after) + len(self.waiting) + len(self.fold)
 
     def __loop(self, statement) -> None:
         while statement(self.waiting, self.communityData):
@@ -78,8 +74,9 @@ class BetQueue:
             elif move != Move.QUIT:
                 self.after.append(player)
    
-            if self.getNumOfPlayers() < 2:          raise LastPlayerLeft()
+            if len(self.allPlayers()) < 2:          raise LastPlayerLeft()
             if len(self.getNonFoldingPlayers()) < 2:raise BetEnded()
 
     def getCommCards(self): return self.communityData.communityCards
+    def allPlayers(self):   return self.waiting + self.after + self.fold
     def getNonFoldingPlayers(self) -> list: return self.waiting + self.after

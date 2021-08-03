@@ -1,7 +1,18 @@
+from pyker.agents.base import Agent
 from .cards import *
 from operator import attrgetter
 
 class CardValidator:
+    @classmethod
+    def showdown(self, players, commCards):
+    #check for maximum values in all cards
+        pointsList  = [[x, self.combination(x.agent.hand + commCards)]for x in players]
+        maxPoints   = max(pointsList, key=lambda x : x[1])[1]
+    #check for best kicker
+        maxPlayers  = [[x, self.combination(x.agent.hand)]for x, y in pointsList if y == maxPoints]
+        maxPoints   = max(maxPlayers, key=lambda x : x[1])[1]
+        return [x for x, y in maxPlayers if y == maxPoints]
+
     @classmethod
     def combination(self, cards):
         funcList = [

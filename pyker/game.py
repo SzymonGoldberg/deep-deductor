@@ -21,20 +21,13 @@ class Game:
             player.agent.hand.extend(self.deck.draw(2))
 
     def __showdown(self) -> None:
-        maxList, max, players = [], 0, self.betQueue.getNonFoldingPlayers()
-        for player in players:
-            temp = CardValidator.combination(player.getHand() + self.betQueue.getCommCards())
-            if temp > max:
-                maxList = [player]
-                max = temp
-            elif temp == max:
-                maxList.append(player)
-        prize = self.betQueue.getBankroll() // len(maxList)
-        print('--- winners ---')
-        for player in players:
-            if player in maxList:
-                player.incrBalance(prize)
-                print(player, ' prize = ', prize)
+        players = self.betQueue.getNonFoldingPlayers()
+        winners = CardValidator.showdown(players, self.betQueue.getCommCards())
+        prize = self.betQueue.getBankroll() // len(winners)
+        for player in self.betQueue.allPlayers():  
+            player.agent.showdown(winners, players)
+        for winner in winners:  
+            winner.incrBalance(prize)
 
     def __raiseLimit(self) -> None:
         self.betQueue.communityData.limit *= 2
@@ -60,4 +53,4 @@ class Game:
                 self.__showdown()
                 self.__prepareNextRound()
         except LastPlayerLeft:
-            return (self.betQueue.waiting + self.betQueue.after + self.betQueue.fold)[0]
+            return self.betQueue.allPlayers()[0]

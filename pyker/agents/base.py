@@ -12,5 +12,8 @@ class Agent:
     def bet(self, communityData :CommunityData, playerPot :int):
         raise NotImplementedError()
 
+    def showdown(self, winners :list, all :list):
+        raise NotImplementedError()
+
     def clearHand(self):
         self.hand = []
