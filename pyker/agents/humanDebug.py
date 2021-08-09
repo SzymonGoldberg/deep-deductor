@@ -4,6 +4,7 @@ from pyker.moveValidator import MoveValidator
 class HumanDebug(Agent):
     def bet(self, communityData :CommunityData, playerPot :int):
         print('name -> ', self.name, '\tbalance -> ', self.balance, ' hand -> ', end = ' ')
+        print('\nsmall bets per hands played -> ', self.smallBets/self.handsPlayed if self.handsPlayed > 0 else 0)
         for card in self.hand:
             print(card.asString(), end=' ')
 

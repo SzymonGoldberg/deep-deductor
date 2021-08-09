@@ -8,6 +8,8 @@ class Agent:
         self.balance = startCash
         self.name = playerName
         self.clearHand()
+        self.smallBets = 0
+        self.handsPlayed = 0
 
     def bet(self, communityData :CommunityData, playerPot :int):
         raise NotImplementedError()

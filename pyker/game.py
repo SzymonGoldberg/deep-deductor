@@ -23,11 +23,17 @@ class Game:
     def __showdown(self) -> None:
         players = self.betQueue.getNonFoldingPlayers()
         winners = CardValidator.showdown(players, self.betQueue.getCommCards())
-        prize = self.betQueue.getBankroll() // len(winners)
-        for player in self.betQueue.allPlayers():  
+        prize   = self.betQueue.getBankroll() // len(winners)
+        prizeToSmallBets = prize // (self.betQueue.communityData.limit//2)
+        for player in players:
+            player.agent.handsPlayed += 1
+            if player in winners:
+                player.incrBalance(prize)
+                player.agent.smallBets += prizeToSmallBets
+            else:
+                player.agent.smallBets -= prizeToSmallBets
+        for player in self.betQueue.allPlayers():
             player.agent.showdown(winners, players)
-        for winner in winners:  
-            winner.incrBalance(prize)
 
     def __raiseLimit(self) -> None:
         self.betQueue.communityData.limit *= 2
