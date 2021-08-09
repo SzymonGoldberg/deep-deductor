@@ -38,7 +38,7 @@ class BetQueue:
         self.__initAfterFoldAndCommData(limit)
         for player in self.waiting:
             idx = player.dealerIdx - 1
-            player.dealerIdx = idx if idx > 0 else len(self.waiting) - 1
+            player.dealerIdx = idx if idx > -1 else len(self.waiting) - 1
             player.clearHandAndPot()
 
         self.waiting.sort(key=lambda x: x.dealerIdx)

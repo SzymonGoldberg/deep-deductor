@@ -7,7 +7,8 @@ class Game:
         assert(12 > len(agents) > 1 and limit > 1)
         self.deck = deck
         self.limit = limit
-        self.betQueue = BetQueue(limit, [PlayerWrapper(*n) for n in enumerate(agents)])
+        self.betQueue = BetQueue(limit,[
+            PlayerWrapper(*n) for n in enumerate(agents)])
 
     def __drawCommunityCards(self, numOfCards :int) -> None:
         self.betQueue.extendCommCards(self.deck.draw(numOfCards))
