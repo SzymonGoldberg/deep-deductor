@@ -1,5 +1,3 @@
-from pyker.betQueue import CommunityData
-
 class Agent:
     """ Player card which contain points and hand (cards)
     """
@@ -11,7 +9,7 @@ class Agent:
         self.smallBets = 0
         self.handsPlayed = 0
 
-    def bet(self, communityData :CommunityData, playerPot :int):
+    def bet(self, communityData, playerPot :int):
         raise NotImplementedError()
 
     def showdown(self, winners :list, all :list):
