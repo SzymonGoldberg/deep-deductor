@@ -16,6 +16,13 @@ suit_to_str = {
     Suit.SPADE  : 's'
 }
 
+str_to_suit = {
+    'c' : Suit.CLUB,
+    'd' : Suit.DIAMOND,
+    'h' : Suit.HEART,
+    's' : Suit.SPADE
+}
+
 class Rank(IntEnum):
     TWO     = 2
     THREE   = 3
@@ -47,6 +54,22 @@ rank_to_str = {
     Rank.ACE    : 'A'
 }
 
+str_to_rank = {
+    '2' : Rank.TWO,
+    '3' : Rank.THREE,
+    '4' : Rank.FOUR,
+    '5' : Rank.FIVE,
+    '6' : Rank.SIX,
+    '7' : Rank.SEVEN,
+    '8' : Rank.EIGHT,
+    '9' : Rank.NINE,
+    'T' : Rank.TEN,
+    'J' : Rank.JACK,
+    'Q' : Rank.QUEEN,
+    'K' : Rank.KING,
+    'A' : Rank.ACE
+}
+
 class Card(namedtuple('Card', 'rank suit')):
     """ card type built with rank (int between 2 and 14) and suit (see Suit class)"""
     def asString(self):
@@ -55,6 +78,10 @@ class Card(namedtuple('Card', 'rank suit')):
         return str(rank_to_str[self.rank] + suit_to_str[self.suit]
             ) if self.rank in rank_to_str and self.suit in suit_to_str else str(
             'invalid card')
+
+    @classmethod
+    def fromString(cls, string):
+        return Card(str_to_rank[string[0]], str_to_suit[string[1]])
             
 class Deck():
     """ Class represents all cards used in single game"""
