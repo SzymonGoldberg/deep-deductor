@@ -1,6 +1,8 @@
 import json
+import joblib
 from pyker.cards import Card
 from pyker.cardValidator import CardValidator
+from sklearn.neighbors import KNeighborsClassifier
 
 def stringsToCards(strList):
     return [Card.fromString(x) for x in strList]
@@ -27,3 +29,12 @@ with open('/home/szymon/inne/ips/PokerHandsDataset/hands_valid.json','r') as f:
                     labels[idx].append(CardValidator.combination(playerHand+comm[:3+idx]))
                     print('features -> ', features[idx][-1], '\tlabels -> ', labels[idx][-1])
         line = f.readline()
+
+print("creating knn models")
+knn = []
+for n in range(3):
+    knn.append(KNeighborsClassifier())
+    knn[n].fit(features[n], labels[n])
+print("saving models")
+joblib.dump(knn, 'testKNNmodels.joblib', compress=4)
+print('done')

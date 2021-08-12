@@ -4,10 +4,8 @@ from pyker.moveValidator import MoveValidator
 class HumanDebug(Agent):
     def bet(self, communityData, playerPot :int):
         print('name -> ', self.name, '\tbalance -> ', self.balance, ' hand -> ', end = ' ')
-        print('\nsmall bets per hands played -> ', self.smallBets/self.handsPlayed if self.handsPlayed > 0 else 0)
         for card in self.hand:
             print(card.asString(), end=' ')
-
         print("\ncommunity cards ->",end=' ')
         for card in communityData.communityCards:
             print(card.asString(), end=' ')
@@ -27,12 +25,13 @@ class HumanDebug(Agent):
         return move
 
     def showdown(self, winners: list, all: list):
-        print(chr(27) + "[2J", '- showdown')
+        print(chr(27) + "[2J")
+        print('- showdown')
         for player in all:
-            print('-- player -> ', player.agent.name, '\thand ->',end=' ')
+            print(  '-- player -> ', player.agent.name, '\thand ->', end=' ')
             for card in player.agent.hand:
                 print(card.asString(), end=' ')
-            print()
+            print('\tsbph -> ', player.agent.smallBets/player.agent.handsPlayed if player.agent.handsPlayed > 0 else 0)
         print('\n- winners')
         for winner in winners:
             print('-- ', winner)
