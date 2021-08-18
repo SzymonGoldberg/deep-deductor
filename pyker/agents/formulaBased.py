@@ -5,7 +5,7 @@ from pyker.cardValidator import CardValidator
 
 class FormulaBasedAgent(Agent):
     def bet(self, communityData: CommunityData, playerPot: int):
-        moves = MoveValidator.legalMoves(communityData, playerPot)
+        moves = MoveValidator.availableAndLegalMoves(communityData, playerPot, self.balance)
         if len(communityData.actions) == 1:
             if Move.CALL in moves: return Move.CALL
             elif Move.CHECK in moves: return Move.CHECK
