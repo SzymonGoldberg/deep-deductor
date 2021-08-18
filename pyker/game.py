@@ -2,13 +2,13 @@ from .betQueue import BetQueue, BetEnded, LastPlayerLeft
 from pyker.cardValidator import CardValidator
 from .playerWrapper import PlayerWrapper
 
-class Game:
-    def __init__(self, agents :list, deck, limit :int) -> None:
+class Poker:
+    def __init__(self, agents :list, deck, limit :int, startBalance :int) -> None:
         assert(12 > len(agents) > 1 and limit > 1)
         self.deck = deck
         self.limit = limit
         self.betQueue = BetQueue(limit,[
-            PlayerWrapper(*n) for n in enumerate(agents)])
+            PlayerWrapper(*n, startBalance) for n in enumerate(agents)])
 
     def __drawCommunityCards(self, numOfCards :int) -> None:
         self.betQueue.extendCommCards(self.deck.draw(numOfCards))

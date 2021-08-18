@@ -9,16 +9,17 @@ class PlayerWrapper:
     data easier, its contains amount of cash inserted into pot by player and 
     distance from dealer in dealeridx"""
 
-    def __init__(self, dealerIndex :int, agent) -> None:
+    def __init__(self, dealerIndex :int, agent, balance :int) -> None:
         self.agent = agent
         self.inPot = 0
         self.dealerIdx = dealerIndex
+        self.agent.balance = balance
 
     def bet(self, communityData :CommunityData):
         move = self.agent.bet(communityData, self.inPot)
         amount = mv.moveToCash(communityData, self.inPot, move)
         if amount > self.agent.balance: 
-            raise NotEnoughCashException
+            raise NotEnoughCashException()
         if not move in mv.legalMoves(communityData, self.inPot):
             raise IllegalMoveException()
 
