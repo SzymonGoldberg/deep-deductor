@@ -7,6 +7,7 @@ class Poker:
         assert(12 > len(agents) > 1 and limit > 1)
         self.deck = deck
         self.limit = limit
+        self.numOfGames = 0
         self.betQueue = BetQueue(limit,[
             PlayerWrapper(*n, startBalance) for n in enumerate(agents)])
 
@@ -14,6 +15,7 @@ class Poker:
         self.betQueue.extendCommCards(self.deck.draw(numOfCards))
 
     def __prepareNextRound(self) -> None:
+        self.numOfGames += 1
         self.deck.reset()
         self.betQueue.reset(self.limit)
 

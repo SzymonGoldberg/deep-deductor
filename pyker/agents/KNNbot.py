@@ -1,7 +1,8 @@
+from os import access
 import random
 from pyker.cardValidator import CardValidator as CardVal
 from pyker.agents.base import Agent
-from pyker.betQueue import Move
+from pyker.betQueue import CommunityData, Move
 from pyker.moveValidator import MoveValidator
 import joblib
 
@@ -27,12 +28,15 @@ class KnnBot(Agent):
             elif Move.BLIND in moves: return Move.BLIND
             return Move.QUIT
 
+        playerList = set(x[0] for x in communityData.actions[-1] if x[0] != self.name)
+
         commVal = CardVal.combination(communityData.communityCards)
         predictedHands = [knn[len(communityData.actions)-2].predict([[
             commVal,
             countBets(player, communityData.actions[-1]),
-            countBets(player, communityData.actions[-1])
-        ]]) for player in [x[0] for x in communityData.actions[-1]]]
+            countCalls(player, communityData.actions[-1])
+        ]]) for player in playerList]
+
         if len(predictedHands) > 0 and\
            max(predictedHands) > CardVal.combination(communityData.communityCards + self.hand):
             return Move.FOLD
