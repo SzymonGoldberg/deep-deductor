@@ -1,14 +1,13 @@
+from pyker.agents.startingHands import StartCat, handToStartCategory
 import random
 from pyker.cardValidator import CardValidator as CardVal
 from pyker.agents.base import Agent
 from pyker.betQueue import Move
 from pyker.moveValidator import MoveValidator
 import tensorflow as tf
-import numpy as np
-import joblib
 
-features = joblib.load('ann_raw_features.joblib')
-labels = joblib.load('ann_raw_labels.joblib')
+'''features = joblib.load('ann_raw_features.joblib')
+labels = joblib.load('ann_raw_labels.joblib')'''
 
 print('creating neural networks models')
 ann = []
@@ -41,11 +40,14 @@ class AnnBot(Agent):
     def bet(self, communityData, playerPot: int):
         #predefined pre-flop behavior - try to go into flop with low cost
         moves = MoveValidator.availableAndLegalMoves(communityData, playerPot, self.balance)
+        if Move.BLIND in moves: return Move.BLIND
+        if moves == [Move.QUIT]:return Move.QUIT
         if len(communityData.actions) == 1:
-            if Move.CALL in moves: return Move.CALL
-            elif Move.CHECK in moves: return Move.CHECK
-            elif Move.BLIND in moves: return Move.BLIND
-            return Move.QUIT
+            strategy = handToStartCategory(self.hand)
+            if strategy in [StartCat.PLAYABLE_EXTENT, StartCat.PLAYABLE] or\
+              (strategy == StartCat.UNTIL_RAISE and sum(1 for x in communityData.actions[-1]if x[1] in [Move.BET, Move.RAISE])):
+                return Move.CALL if Move.CALL in moves else Move.CHECK
+            return Move.FOLD
 
         playerList = set(x[0] for x in communityData.actions[-1] if x[0] != self.name)
         commVal = list(map(lambda x: CardVal.checkHighCard([x]) / 1.0, communityData.communityCards))

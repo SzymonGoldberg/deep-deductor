@@ -22,4 +22,4 @@ for i in range(100):
         passivity[i] += playerList[i].handsPlayed
 
 print('formula -> ', stats[0]/10, '\tpassive -> ', (100*passivity[0])/numOfGames)
-print('ann -> ', stats[1]/10, '\tpassive -> ', (100*passivity[1])/numOfGames)
+print('ann + start hand evaulation -> ', stats[1]/10, '\tpassive -> ', (100*passivity[1])/numOfGames)
