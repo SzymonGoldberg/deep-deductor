@@ -46,7 +46,8 @@ class AnnBot(Agent):
             strategy = handToStartCategory(self.hand)
             if strategy in [StartCat.PLAYABLE_EXTENT, StartCat.PLAYABLE] or\
               (strategy == StartCat.UNTIL_RAISE and sum(1 for x in communityData.actions[-1]if x[1] in [Move.BET, Move.RAISE])):
-                return Move.CALL if Move.CALL in moves else Move.CHECK
+                if Move.CALL in moves: return Move.CALL 
+                if Move.CHECK in moves: return Move.CHECK
             return Move.FOLD
 
         playerList = set(x[0] for x in communityData.actions[-1] if x[0] != self.name)
