@@ -6,27 +6,13 @@ from pyker.betQueue import Move
 from pyker.moveValidator import MoveValidator
 import tensorflow as tf
 
-def deprecated_model_build():
-    for n in range(3):
-        features = joblib.load('ann_raw_features.joblib')
-        labels = joblib.load('ann_raw_labels.joblib')
-        model = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(24, activation='relu'),
-            tf.keras.layers.Dense(10, activation='relu'),
-            tf.keras.layers.Dense(1)
-        ])
-        features_tf = tf.convert_to_tensor(features[n])
-        labels_tf = tf.convert_to_tensor(labels[n])
-        model.compile(optimizer='adam', loss='mean_squared_error')
-        model.fit(features_tf, labels_tf, epochs=5, batch_size=16)
-        model.save('ann_models/ann'+str(n))
-
-
-print('creating neural networks models')
+print('loading neural networks models')
 ann = []
+dec_ann = []
 for n in range(3):
     ann.append(tf.keras.models.load_model('ann_models/ann'+str(n)))
+    dec_ann.append(tf.keras.models.load_model('ann_dec_models/ann'+str(n)))
+
 
 def countCalls(player, actions):
     return sum(1 for x in actions if x[0] == player and x[1] in [Move.CALL, Move.CHECK]) / 1.0
@@ -34,7 +20,7 @@ def countCalls(player, actions):
 def countBets(player, actions):
     return sum(1 for x in actions if x[0] == player and x[1] in [Move.RAISE, Move.BET]) / 1.0
 
-class AnnBot(Agent):
+class AnnDecisionBot(Agent):
     def showdown(self, winners: list, all: list):
         pass
 
@@ -61,16 +47,22 @@ class AnnBot(Agent):
                 countBets(player, communityData.actions[-1]),
                 idx/1.0,
                 len(playerList)/1.0]]))
-            predStr.append(ann[len(communityData.actions)-2].predict(ans))
-        if len(predStr) > 0 and\
-           max(predStr) > CardVal.combination(communityData.communityCards + self.hand):
-            return Move.FOLD
-        if random.choice([True, False]):
-            if Move.BET in moves: return Move.BET
-            elif Move.RAISE in moves: return Move.RAISE
-        else:
-            if Move.CALL in moves: return Move.CALL
-            elif Move.CHECK in moves: return Move.CHECK
+            predStr.append(*ann[len(communityData.actions)-2].predict(ans))
+
+        if len(predStr) > 0:
+
+            ans = tf.convert_to_tensor(tuple([[
+                *[CardVal.checkHighCard([x])/1.0 for x in self.hand],
+                *commVal,
+                max(predStr)[0]
+            ]]))
+            if dec_ann[len(communityData.actions)-2].predict(ans) > 0.5:
+                if random.choice([True, False]):
+                    if Move.BET in moves: return Move.BET
+                    elif Move.RAISE in moves: return Move.RAISE
+                else:
+                    if Move.CALL in moves: return Move.CALL
+                    elif Move.CHECK in moves: return Move.CHECK
         
         if Move.CHECK in moves: return Move.CHECK
         return Move.FOLD if Move.FOLD in moves else Move.QUIT

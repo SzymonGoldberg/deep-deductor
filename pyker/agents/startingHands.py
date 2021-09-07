@@ -237,6 +237,6 @@ def handToStartCategory(hand):
     assert(len(hand) == 2)
     if hand[0].rank == hand[1].rank:
         return PAIRED[hand[0].rank]
-    if hand[0].suit == hand[1].suit:
+    if hand[0].suit != hand[1].suit:
         return UNSUITED[hand[1].rank][hand[0].rank]
     return SUITED[hand[1].rank][hand[0].rank]

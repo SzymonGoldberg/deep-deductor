@@ -1,3 +1,4 @@
+from pyker.agents.ANNdecisionBot import AnnDecisionBot
 from pyker.agents.ANNbot import AnnBot
 from pyker.agents.humanDebug import HumanDebug
 from pyker.agents.KNNbot import KnnBot
@@ -11,7 +12,7 @@ numOfGames = 0
 for i in range(100):
     playerList = [
         FormulaBasedAgent('formula bot'),
-        AnnBot('ann bot')
+        AnnDecisionBot('ann decision bot')        
     ]
         
     game = Poker(playerList, Deck(), 32, 1000)
@@ -22,4 +23,4 @@ for i in range(100):
         passivity[i] += playerList[i].handsPlayed
 
 print('formula -> ', stats[0]/10, '\tpassive -> ', (100*passivity[0])/numOfGames)
-print('ann + start hand evaulation -> ', stats[1]/10, '\tpassive -> ', (100*passivity[1])/numOfGames)
+print('ann + decision + starting hands-> ', stats[1]/10, '\tpassive -> ', (100*passivity[1])/numOfGames)
