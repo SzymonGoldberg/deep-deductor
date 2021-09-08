@@ -1,3 +1,4 @@
+from pyker.agents.AnnStartingHands import AnnBotStartingHands
 from pyker.agents.ANNdecisionBot import AnnDecisionBot
 from pyker.agents.ANNbot import AnnBot
 from pyker.agents.humanDebug import HumanDebug
@@ -6,21 +7,23 @@ from pyker.agents.formulaBased import FormulaBasedAgent
 from pyker.cards import Deck
 from pyker.game import Poker
 
-stats = [0, 0]
-passivity = [0, 0]
+sbph = [0, 0, 0, 0]
+passivity = [0, 0, 0, 0]
 numOfGames = 0
 for i in range(100):
     playerList = [
         FormulaBasedAgent('formula bot'),
-        AnnDecisionBot('ann decision bot')        
+        AnnBot('ann bot'),
+        KnnBot('knn bot'),
+        AnnBotStartingHands('ann bot + starting hands')
     ]
         
     game = Poker(playerList, Deck(), 32, 1000)
     winner = game.start()
     numOfGames += game.numOfGames
-    for i in range(len(playerList)):
-        stats[i] += playerList[i].smallBets/playerList[i].handsPlayed    
-        passivity[i] += playerList[i].handsPlayed
+    for n in range(len(playerList)):
+        sbph[n] += playerList[n].smallBets/playerList[n].handsPlayed if playerList[n].handsPlayed > 0 else 0
+        passivity[n] += playerList[n].handsPlayed
 
-print('formula -> ', stats[0]/10, '\tpassive -> ', (100*passivity[0])/numOfGames)
-print('ann + decision + starting hands-> ', stats[1]/10, '\tpassive -> ', (100*passivity[1])/numOfGames)
+for n in range(len(playerList)):
+    print(playerList[n].name, ' -> ', sbph[n]/100, '\tpassive -> ', (100*passivity[n])/numOfGames)

@@ -1,4 +1,3 @@
-from pyker.agents.startingHands import StartCat, handToStartCategory
 import random
 from pyker.cardValidator import CardValidator as CardVal
 from pyker.agents.base import Agent
@@ -41,15 +40,11 @@ class AnnBot(Agent):
     def bet(self, communityData, playerPot: int):
         #predefined pre-flop behavior - try to go into flop with low cost
         moves = MoveValidator.availableAndLegalMoves(communityData, playerPot, self.balance)
-        if Move.BLIND in moves: return Move.BLIND
-        if moves == [Move.QUIT]:return Move.QUIT
         if len(communityData.actions) == 1:
-            strategy = handToStartCategory(self.hand)
-            if strategy in [StartCat.PLAYABLE_EXTENT, StartCat.PLAYABLE] or\
-              (strategy == StartCat.UNTIL_RAISE and sum(1 for x in communityData.actions[-1]if x[1] in [Move.BET, Move.RAISE])):
-                if Move.CALL in moves: return Move.CALL 
-                if Move.CHECK in moves: return Move.CHECK
-            return Move.FOLD
+            if Move.CALL in moves: return Move.CALL
+            elif Move.CHECK in moves: return Move.CHECK
+            elif Move.BLIND in moves: return Move.BLIND
+            return Move.QUIT
 
         playerList = set(x[0] for x in communityData.actions[-1] if x[0] != self.name)
         commVal = list(map(lambda x: CardVal.checkHighCard([x]) / 1.0, communityData.communityCards))
